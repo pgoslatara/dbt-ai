@@ -11,7 +11,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write
       issues: write
 
     steps:
@@ -19,10 +18,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run Claude codebase review
-        id: review
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           direct_prompt: |
             Perform a comprehensive review of this dbt project for best practices.
 
@@ -36,15 +35,13 @@ jobs:
             7. Missing contracts on marts models
             8. Opportunities for incremental materializations
 
-            Format your findings as a GitHub issue body with:
-            - A summary of the codebase health
-            - Categorized findings (Critical, Warning, Suggestion)
-            - Specific file paths and line numbers
-            - Recommended fixes
-
-      - name: Create GitHub issue
-        uses: peter-evans/create-issue-from-file@v5
-        with:
-          content-filepath: claude-output.txt
-          labels: automated,code-quality
-          title: "Weekly: dbt codebase review"
+            Create a GitHub issue with your findings using:
+            gh issue create \
+              --title "Weekly: dbt codebase review ($(date +%Y-%m-%d))" \
+              --label "automated,code-quality" \
+              --body "<your findings formatted as markdown with:
+              - A summary of the codebase health
+              - Categorized findings (Critical, Warning, Suggestion)
+              - Specific file paths and line numbers
+              - Recommended fixes>"
+          use_claude_code: true

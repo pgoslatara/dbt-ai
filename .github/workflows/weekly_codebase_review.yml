@@ -26,7 +26,8 @@ jobs:
           CLAUDE_CODE_ACCEPT_TOS: "true"
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          claude --print --dangerously-skip-permissions "Perform a comprehensive review of this dbt project for best practices.
+          cat <<'PROMPT' | claude --print --dangerously-skip-permissions > /tmp/review.md
+          Perform a comprehensive review of this dbt project for best practices.
 
           Check for:
           1. Models without tests or documentation
@@ -44,7 +45,8 @@ jobs:
           - Specific file paths and line numbers
           - Recommended fixes
 
-          Do not output anything other than the markdown report." > /tmp/review.md
+          Do not output anything other than the markdown report.
+          PROMPT
 
           gh issue create \
             --title "Weekly: dbt codebase review ($(date +%Y-%m-%d))" \

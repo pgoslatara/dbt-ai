@@ -1,0 +1,123 @@
+name: Fix Cloud Run Failure
+
+on:
+  repository_dispatch:
+    types: [cloud_run_failure]
+  workflow_dispatch:
+    inputs:
+      execution_name:
+        description: Cloud Run execution name (e.g., dbt-ai-build-xxxxx)
+        required: false
+      trigger_source:
+        description: What triggered this workflow
+        required: false
+        default: manual
+
+env:
+  GCP_PROJECT: ${{ secrets.GCP_PROJECT_ID }}
+  REGION: europe-west4
+
+jobs:
+  fix:
+    name: Analyze Failure and Create Fix PR
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Resolve execution name
+        id: resolve
+        run: |
+          # Use input from workflow_dispatch, repository_dispatch payload, or find latest failed
+          EXEC_NAME="${{ github.event.inputs.execution_name || github.event.client_payload.execution_name || '' }}"
+
+          if [ -z "$EXEC_NAME" ]; then
+            echo "No execution name provided, finding latest failed execution..."
+            EXEC_NAME=$(gcloud run jobs executions list \
+              --job=dbt-ai-build \
+              --region="${{ env.REGION }}" \
+              --filter="status.conditions[0].type!=Completed" \
+              --sort-by="~createTime" \
+              --limit=1 \
+              --format="value(metadata.name)" \
+              2>/dev/null) || true
+          fi
+
+          if [ -z "$EXEC_NAME" ]; then
+            echo "No failed execution found."
+            exit 0
+          fi
+
+          echo "execution_name=$EXEC_NAME" >> "$GITHUB_OUTPUT"
+          echo "Found failed execution: $EXEC_NAME"
+
+      - name: Pull Cloud Run logs
+        if: steps.resolve.outputs.execution_name
+        id: logs
+        run: |
+          EXEC_NAME="${{ steps.resolve.outputs.execution_name }}"
+
+          # Get execution details
+          gcloud run jobs executions describe "$EXEC_NAME" \
+            --region="${{ env.REGION }}" \
+            --format=yaml > /tmp/execution_details.txt 2>&1 || true
+
+          # Get logs from Cloud Logging
+          gcloud logging read \
+            "resource.type=cloud_run_job AND resource.labels.job_name=dbt-ai-build AND labels.\"run.googleapis.com/execution_name\"=$EXEC_NAME" \
+            --limit=200 \
+            --format="table(timestamp,textPayload)" \
+            --project="${{ env.GCP_PROJECT }}" \
+            > /tmp/execution_logs.txt 2>&1 || true
+
+          echo "=== Execution Details ===" > /tmp/full_context.txt
+          cat /tmp/execution_details.txt >> /tmp/full_context.txt
+          echo "" >> /tmp/full_context.txt
+          echo "=== Execution Logs ===" >> /tmp/full_context.txt
+          cat /tmp/execution_logs.txt >> /tmp/full_context.txt
+
+      - name: Create fix with Claude
+        if: steps.resolve.outputs.execution_name
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          direct_prompt: |
+            A Cloud Run Job execution of our dbt project has failed.
+
+            Execution: ${{ steps.resolve.outputs.execution_name }}
+
+            Here are the execution details and logs:
+
+            $(cat /tmp/full_context.txt)
+
+            Your task:
+            1. Analyze the error logs to identify the root cause
+            2. Determine which dbt model(s) or configuration caused the failure
+            3. Create a fix by modifying the appropriate files
+            4. Create a new branch named fix/cloud-run-$(date +%Y%m%d-%H%M%S)
+            5. Commit your changes with a descriptive message
+            6. Create a PR with:
+               - Summary of the failure and root cause
+               - What was changed and why
+               - How to verify the fix
+
+            Focus on the most likely cause: SQL errors, schema changes, source
+            freshness issues, or configuration problems. If you cannot determine
+            a code fix (e.g., infrastructure issue), create an issue instead of a PR.
+          use_claude_code: true

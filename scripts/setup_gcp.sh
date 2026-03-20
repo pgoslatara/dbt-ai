@@ -67,6 +67,13 @@ gcloud iam service-accounts add-iam-policy-binding "${SA_EMAIL}" \
     --role="roles/iam.workloadIdentityUser" \
     --member="principalSet://iam.googleapis.com/projects/${PROJECT_NUMBER}/locations/global/workloadIdentityPools/github-pool/attribute.repository/${REPO_OWNER}/${REPO_NAME}"
 
+echo "=== Granting service account actAs permission ==="
+DEFAULT_SA="${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
+gcloud iam service-accounts add-iam-policy-binding "${DEFAULT_SA}" \
+    --member="serviceAccount:${SA_EMAIL}" \
+    --role="roles/iam.serviceAccountUser" \
+    --project="${PROJECT_ID}"
+
 echo "=== Setup complete ==="
 echo ""
 echo "GitHub Secrets to configure:"

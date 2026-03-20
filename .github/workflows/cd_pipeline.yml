@@ -36,9 +36,16 @@ jobs:
           push: true
           tags: ${{ env.REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT }}/dbt-ai/dbt-ai:${{ github.sha }}
 
-      - name: Deploy to Cloud Run
+      - name: Deploy Cloud Run Job
         run: |
-          gcloud run deploy dbt-ai \
+          gcloud run jobs update dbt-ai-build \
             --image="${{ env.REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT }}/dbt-ai/dbt-ai:${{ github.sha }}" \
             --region="${{ env.REGION }}" \
-            --no-allow-unauthenticated
+            --task-timeout=1800 \
+            --max-retries=1 \
+            2>/dev/null \
+          || gcloud run jobs create dbt-ai-build \
+            --image="${{ env.REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT }}/dbt-ai/dbt-ai:${{ github.sha }}" \
+            --region="${{ env.REGION }}" \
+            --task-timeout=1800 \
+            --max-retries=1

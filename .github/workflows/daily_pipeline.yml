@@ -7,19 +7,17 @@ on:
 
 env:
   GCP_PROJECT: ${{ secrets.GCP_PROJECT_ID }}
+  REGION: europe-west4
 
 jobs:
   run:
-    name: dbt Build (Production)
+    name: Execute dbt Build (Cloud Run Job)
     runs-on: ubuntu-latest
     permissions:
       contents: read
       id-token: write
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
       - name: Authenticate to GCP
         uses: google-github-actions/auth@v2
         with:
@@ -29,17 +27,34 @@ jobs:
       - name: Setup gcloud
         uses: google-github-actions/setup-gcloud@v2
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v6
+      - name: Execute Cloud Run Job
+        id: execute
+        run: |
+          EXECUTION=$(gcloud run jobs execute dbt-ai-build \
+            --region="${{ env.REGION }}" \
+            --wait \
+            --format="value(metadata.name)" \
+            2>&1) || true
+          echo "execution=$EXECUTION" >> "$GITHUB_OUTPUT"
 
-      - name: Setup Python
-        run: uv python install
+          # Check execution status
+          STATUS=$(gcloud run jobs executions describe "$EXECUTION" \
+            --region="${{ env.REGION }}" \
+            --format="value(status.conditions[0].type)" \
+            2>/dev/null) || STATUS="Failed"
+          echo "status=$STATUS" >> "$GITHUB_OUTPUT"
 
-      - name: Install dependencies
-        run: uv sync
+          if [ "$STATUS" != "Completed" ]; then
+            echo "Cloud Run Job execution failed: $STATUS"
+            exit 1
+          fi
 
-      - name: Install dbt packages
-        run: uv run dbt deps
-
-      - name: Run dbt build
-        run: uv run dbt build --target prod
+      - name: Trigger fix workflow on failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh workflow run fix_cloud_run_failure.yml \
+            --repo "${{ github.repository }}" \
+            -f execution_name="${{ steps.execute.outputs.execution }}" \
+            -f trigger_source="daily_pipeline"

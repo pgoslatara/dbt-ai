@@ -23,6 +23,7 @@ jobs:
       - name: Run codebase review and create issue
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          CLAUDE_CODE_ACCEPT_TOS: "true"
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           claude --print --dangerously-skip-permissions "Perform a comprehensive review of this dbt project for best practices.

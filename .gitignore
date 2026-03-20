@@ -20,9 +20,6 @@ dbt_packages/
 logs/
 .user.yml
 
-# uv
-uv.lock
-
 # IDE
 .idea/
 .vscode/

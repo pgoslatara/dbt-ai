@@ -1,0 +1,44 @@
+name: CD Pipeline
+
+on:
+  push:
+    branches: [main]
+
+env:
+  GCP_PROJECT: ${{ secrets.GCP_PROJECT_ID }}
+  REGION: europe-west4
+
+jobs:
+  deploy:
+    name: Build and Deploy
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ env.REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT }}/dbt-ai/dbt-ai:${{ github.sha }}
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy dbt-ai \
+            --image="${{ env.REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT }}/dbt-ai/dbt-ai:${{ github.sha }}" \
+            --region="${{ env.REGION }}" \
+            --no-allow-unauthenticated

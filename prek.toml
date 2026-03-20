@@ -1,0 +1,67 @@
+[tool.prek]
+
+[[tool.prek.hooks]]
+id = "check-added-large-files"
+args = ["--maxkb=1024"]
+
+[[tool.prek.hooks]]
+id = "check-merge-conflict"
+
+[[tool.prek.hooks]]
+id = "check-toml"
+
+[[tool.prek.hooks]]
+id = "check-yaml"
+
+[[tool.prek.hooks]]
+id = "detect-private-key"
+
+[[tool.prek.hooks]]
+id = "end-of-file-fixer"
+
+[[tool.prek.hooks]]
+id = "trailing-whitespace"
+
+[[tool.prek.hooks]]
+id = "dbt-bouncer"
+entry = "uv run dbt-bouncer --only manifest_checks"
+language = "system"
+pass_filenames = false
+types = ["yaml", "sql"]
+
+[[tool.prek.hooks]]
+id = "ruff-check"
+entry = "uv run ruff check --fix"
+language = "system"
+types = ["python"]
+
+[[tool.prek.hooks]]
+id = "ruff-format"
+entry = "uv run ruff format"
+language = "system"
+types = ["python"]
+
+[[tool.prek.hooks]]
+id = "rumdl"
+entry = "uv run rumdl"
+language = "system"
+types = ["markdown"]
+
+[[tool.prek.hooks]]
+id = "sqlfmt"
+entry = "uv run sqlfmt"
+language = "system"
+types = ["sql"]
+
+[[tool.prek.hooks]]
+id = "ty"
+entry = "uv run ty check"
+language = "system"
+pass_filenames = false
+types = ["python"]
+
+[[tool.prek.hooks]]
+id = "yamlfix"
+entry = "uv run yamlfix"
+language = "system"
+types = ["yaml"]

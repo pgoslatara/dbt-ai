@@ -1,0 +1,29 @@
+project:
+  name: dbt-ai
+  description: AI-powered dbt project for bike-share analytics, demonstrating cutting-edge AI usage with dbt
+
+  domain: Data engineering and analytics
+  tech_stack:
+    - dbt (BigQuery)
+    - Python 3.13
+    - GitHub Actions
+    - Google Cloud Platform
+    - Claude AI
+
+  conventions:
+    sql_style: Uppercase keywords, snake_case identifiers, CTEs over subqueries
+    naming:
+      staging: "stg_<source>__<entity>"
+      intermediate: "int_<entity>"
+      dimensions: "dim_<entity>"
+      facts: "fct_<entity>"
+    materializations:
+      staging: view
+      intermediate: view
+      marts: table or incremental
+
+  data_sources:
+    - name: Austin Bikeshare
+      location: bigquery-public-data.austin_bikeshare
+    - name: NYC Citi Bike
+      location: bigquery-public-data.new_york_citibike

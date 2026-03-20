@@ -1,0 +1,46 @@
+[project]
+name = "dbt-ai"
+version = "0.1.0"
+description = "AI-powered dbt project for bike-share analytics"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "dbt-bigquery",
+]
+
+[dependency-groups]
+dev = [
+    "dbt-bouncer",
+    "prek",
+    "pytest",
+    "ruff",
+    "rumdl",
+    "shandy-sqlfmt[jinjafmt]",
+    "ty",
+    "yamlfix",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    "COM812",
+    "D100",
+    "D104",
+    "ISC001",
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.sqlfmt]
+dialect = "bigquery"
+line_length = 120
+
+[tool.yamlfix]
+line_length = 120
+section_whitelines = 1
+sequence_style = "block_style"

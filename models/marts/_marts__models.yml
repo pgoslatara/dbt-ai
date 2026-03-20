@@ -1,0 +1,153 @@
+models:
+  - name: dim_stations
+    description: >
+      Dimension table of all bikeshare stations across cities,
+      enriched with trip metrics.
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: station_id
+        data_type: STRING
+        description: Unique identifier for the station
+        tests:
+          - not_null
+
+      - name: avg_trip_duration_minutes
+        data_type: FLOAT64
+        description: Average trip duration in minutes for trips starting at this station
+
+      - name: city
+        data_type: STRING
+        description: City where the station is located
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["austin", "new_york"]
+
+      - name: latitude
+        data_type: FLOAT64
+        description: Latitude coordinate of the station
+        tests:
+          - not_null
+
+      - name: longitude
+        data_type: FLOAT64
+        description: Longitude coordinate of the station
+        tests:
+          - not_null
+
+      - name: station_name
+        data_type: STRING
+        description: Human-readable name of the station
+        tests:
+          - not_null
+
+      - name: total_trips
+        data_type: INT64
+        description: Total number of trips starting at this station
+
+  - name: fct_daily_station_metrics
+    description: >
+      Daily aggregated metrics per station, built incrementally.
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: station_id
+        data_type: STRING
+        description: Unique identifier for the station
+        tests:
+          - not_null
+
+      - name: avg_trip_duration_minutes
+        data_type: FLOAT64
+        description: Average trip duration in minutes for the day
+        tests:
+          - not_null
+
+      - name: city
+        data_type: STRING
+        description: City where the station is located
+        tests:
+          - not_null
+
+      - name: metric_date
+        data_type: DATE
+        description: The date for these metrics
+        tests:
+          - not_null
+
+      - name: total_trips
+        data_type: INT64
+        description: Total number of trips for the day
+        tests:
+          - not_null
+
+  - name: fct_trips
+    description: >
+      Fact table of all bikeshare trips with computed columns
+      for analysis.
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: trip_id
+        data_type: STRING
+        description: Unique identifier for the trip
+        tests:
+          - not_null
+          - unique
+
+      - name: city
+        data_type: STRING
+        description: City where the trip occurred
+        tests:
+          - not_null
+
+      - name: day_of_week
+        data_type: INT64
+        description: Day of the week (1=Sunday, 7=Saturday)
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 1
+              max_value: 7
+
+      - name: end_station_id
+        data_type: STRING
+        description: Station where the trip ended
+
+      - name: ended_at
+        data_type: TIMESTAMP
+        description: Timestamp when the trip ended
+        tests:
+          - not_null
+
+      - name: is_round_trip
+        data_type: BOOLEAN
+        description: Whether the trip started and ended at the same station
+        tests:
+          - not_null
+
+      - name: is_weekend
+        data_type: BOOLEAN
+        description: Whether the trip occurred on a weekend
+        tests:
+          - not_null
+
+      - name: start_station_id
+        data_type: STRING
+        description: Station where the trip started
+        tests:
+          - not_null
+
+      - name: started_at
+        data_type: TIMESTAMP
+        description: Timestamp when the trip started
+        tests:
+          - not_null
+
+      - name: trip_duration_minutes
+        data_type: FLOAT64
+        description: Duration of the trip in minutes

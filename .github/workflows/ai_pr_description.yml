@@ -1,0 +1,43 @@
+name: AI PR Description
+
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  describe:
+    name: Generate PR Description
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate PR description
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          direct_prompt: |
+            Analyze the diff for this PR and generate a business-friendly description.
+
+            Structure:
+            ## Summary
+            Brief overview of what changed and why.
+
+            ## dbt Model Changes
+            List any new, modified, or removed models with their layer (staging/intermediate/marts).
+
+            ## Test Coverage
+            Note any new tests added or testing gaps.
+
+            ## Impact
+            Describe downstream impact on other models or dashboards.
+
+            Keep it concise and focused on business value, not implementation details.
+          update_description: true

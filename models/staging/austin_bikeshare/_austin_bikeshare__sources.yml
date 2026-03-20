@@ -1,0 +1,29 @@
+sources:
+  - name: austin_bikeshare
+    database: bigquery-public-data
+    description: Austin B-cycle bikeshare public dataset
+    loader: bigquery_public_datasets
+    schema: austin_bikeshare
+
+    freshness:
+      warn_after:
+        count: 30
+        period: day
+      error_after:
+        count: 365
+        period: day
+
+    loaded_at_field: modified_date
+
+    tables:
+      - name: bikeshare_stations
+        description: Station location and capacity information for Austin B-cycle stations
+        columns:
+          - name: station_id
+            description: Unique identifier for the station
+
+      - name: bikeshare_trips
+        description: Individual trip records for Austin B-cycle bikeshare
+        columns:
+          - name: trip_id
+            description: Unique identifier for the trip

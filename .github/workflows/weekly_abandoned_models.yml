@@ -1,0 +1,59 @@
+name: Weekly Abandoned Models Check
+
+on:
+  schedule:
+    - cron: "0 8 * * 1"
+  workflow_dispatch:
+
+env:
+  GCP_PROJECT: ${{ secrets.GCP_PROJECT_ID }}
+
+jobs:
+  check:
+    name: Find Abandoned Models
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      issues: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Setup Python
+        run: uv python install
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Parse dbt project
+        run: uv run dbt deps && uv run dbt parse --target prod
+
+      - name: Find abandoned models
+        id: abandoned
+        run: |
+          uv run python scripts/find_abandoned_models.py > abandoned_report.txt 2>&1
+          echo "report<<EOF" >> "$GITHUB_OUTPUT"
+          cat abandoned_report.txt >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub issue
+        if: contains(steps.abandoned.outputs.report, 'DROP')
+        uses: peter-evans/create-issue-from-file@v5
+        with:
+          content-filepath: abandoned_report.txt
+          labels: automated,cleanup
+          title: "Weekly: Abandoned BigQuery models detected"

@@ -1,0 +1,30 @@
+name: dbt_ai
+version: "0.1.0"
+
+config-version: 2
+profile: dbt_ai
+
+clean-targets:
+  - dbt_packages
+  - target
+
+model-paths:
+  - models
+
+seed-paths:
+  - seeds
+
+test-paths:
+  - tests
+
+models:
+  dbt_ai:
+    intermediate:
+      +materialized: view
+      +schema: intermediate
+    marts:
+      +materialized: table
+      +schema: marts
+    staging:
+      +materialized: view
+      +schema: staging

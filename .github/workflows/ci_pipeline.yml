@@ -1,0 +1,70 @@
+name: CI Pipeline
+
+on:
+  pull_request:
+    branches: [main]
+
+concurrency:
+  cancel-in-progress: true
+  group: ci-${{ github.event.number }}
+
+env:
+  DBT_DATASET: "ci_${{ github.event.number }}_${{ github.run_number }}"
+  GCP_PROJECT: ${{ secrets.GCP_PROJECT_ID }}
+
+jobs:
+  ci:
+    name: CI
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Setup Python
+        run: uv python install
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Install dbt packages
+        run: uv run dbt deps
+
+      - name: Parse dbt project
+        run: uv run dbt parse --target ci
+
+      - name: Run dbt-bouncer manifest checks
+        run: uv run dbt-bouncer --only manifest_checks
+
+      - name: Seed data
+        run: uv run dbt seed --target ci
+
+      - name: Build dbt project
+        run: uv run dbt build --fail-fast --full-refresh --target ci
+
+      - name: Run dbt-bouncer run results checks
+        run: uv run dbt-bouncer --only run_results_checks
+
+      - name: Check source freshness
+        run: uv run dbt source freshness --target ci
+
+      - name: Run pre-commit hooks
+        run: uv run prek run -a
+
+      - name: Run pytest
+        run: uv run pytest

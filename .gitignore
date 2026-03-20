@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+*.egg
+dist/
+build/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# dbt
+target/
+dbt_packages/
+logs/
+.user.yml
+
+# uv
+uv.lock
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Environment
+.env
+.envrc
+service_account.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Presentation
+presentation/dist/
+
+# Node (for Marp)
+node_modules/

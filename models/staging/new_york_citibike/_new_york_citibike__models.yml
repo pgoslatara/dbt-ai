@@ -1,0 +1,97 @@
+models:
+  - name: stg_new_york_citibike__stations
+    description: Cleaned and standardized NYC Citi Bike bikeshare stations
+    columns:
+      - name: station_id
+        description: Unique identifier for the station
+        tests:
+          - not_null
+          - unique
+
+      - name: capacity
+        description: Number of bike docks at the station
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 200
+
+      - name: city
+        description: City where the station is located
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["new_york"]
+
+      - name: latitude
+        description: Latitude coordinate of the station
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 40
+              max_value: 42
+
+      - name: longitude
+        description: Longitude coordinate of the station
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: -75
+              max_value: -73
+
+      - name: station_name
+        description: Human-readable name of the station
+        tests:
+          - not_null
+
+  - name: stg_new_york_citibike__trips
+    description: Cleaned and standardized NYC Citi Bike bikeshare trips
+    columns:
+      - name: trip_id
+        description: Unique identifier for the trip
+        tests:
+          - not_null
+          - unique
+
+      - name: bike_id
+        description: Unique identifier for the bike used
+        tests:
+          - not_null
+
+      - name: city
+        description: City where the trip occurred
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["new_york"]
+
+      - name: duration_minutes
+        description: Duration of the trip in minutes
+
+      - name: end_station_id
+        description: Station where the trip ended
+        tests:
+          - relationships:
+              to: ref('stg_new_york_citibike__stations')
+              field: station_id
+
+      - name: ended_at
+        description: Timestamp when the trip ended
+        tests:
+          - not_null
+
+      - name: start_station_id
+        description: Station where the trip started
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_new_york_citibike__stations')
+              field: station_id
+
+      - name: started_at
+        description: Timestamp when the trip started
+        tests:
+          - not_null
+
+      - name: user_type
+        description: Type of user (subscriber or customer)

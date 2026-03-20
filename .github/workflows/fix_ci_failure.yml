@@ -65,6 +65,7 @@ jobs:
           RUN_ID: ${{ github.event.workflow_run.id }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          claude_args: "--allowedTools bash computer edit write"
           github_token: ${{ secrets.GITHUB_TOKEN }}
           prompt: |
             The CI pipeline failed on PR #${{ steps.pr.outputs.number }} in this dbt project.

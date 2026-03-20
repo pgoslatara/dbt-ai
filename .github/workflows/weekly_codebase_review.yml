@@ -25,7 +25,7 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          claude -p "Perform a comprehensive review of this dbt project for best practices.
+          claude --print --dangerously-skip-permissions "Perform a comprehensive review of this dbt project for best practices.
 
           Check for:
           1. Models without tests or documentation

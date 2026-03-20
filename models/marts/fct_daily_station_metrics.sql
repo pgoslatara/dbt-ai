@@ -1,8 +1,9 @@
 {{
     config(
         materialized='incremental',
-        unique_key=['station_id', 'city', 'metric_date'],
-        incremental_strategy='merge'
+        incremental_strategy='merge',
+        on_schema_change='fail',
+        unique_key=['station_id', 'city', 'metric_date']
     )
 }}
 

@@ -56,6 +56,7 @@ gcloud iam workload-identity-pools providers create-oidc github-provider \
     --location="global" \
     --workload-identity-pool="github-pool" \
     --display-name="GitHub Provider" \
+    --attribute-condition="assertion.repository=='${REPO_OWNER}/${REPO_NAME}'" \
     --attribute-mapping="google.subject=assertion.sub,attribute.repository=assertion.repository" \
     --issuer-uri="https://token.actions.githubusercontent.com" \
     || echo "Provider already exists"

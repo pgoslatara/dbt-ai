@@ -17,69 +17,30 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Gather codebase context
-        run: |
-          {
-            echo "## Project structure"
-            find models/ tests/ -type f | sort
-            echo ""
-            echo "## YAML configs"
-            find models/ -name '*.yml' -type f | sort | while read -r f; do
-              echo "### $f"
-              cat "$f"
-              echo ""
-            done
-            echo "## dbt_project.yml"
-            cat dbt_project.yml
-          } > /tmp/codebase_context.txt
-          echo "Context size: $(wc -c < /tmp/codebase_context.txt) bytes"
+      - name: Run codebase review
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prompt: |
+            Perform a comprehensive review of this dbt project for best practices.
 
-      - name: Run AI codebase review
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: |
-          CONTEXT=$(head -3000 /tmp/codebase_context.txt)
+            Check for:
+            1. Models without tests or documentation
+            2. Naming convention violations (stg_, int_, dim_, fct_ prefixes)
+            3. Incorrect materializations (staging should be views, marts should be tables)
+            4. Missing source freshness checks
+            5. SQL style violations (uppercase keywords, CTEs over subqueries)
+            6. Unused models or circular dependencies
+            7. Missing contracts on marts models
+            8. Opportunities for incremental materializations
 
-          jq -n \
-            --arg context "$CONTEXT" \
-            '{
-              model: "claude-sonnet-4-6",
-              max_tokens: 4096,
-              messages: [{
-                role: "user",
-                content: ("Review this dbt project for best practices.\n\n" + $context + "\n\nCheck for:\n1. Models without tests or documentation\n2. Naming convention violations\n3. Incorrect materializations\n4. Missing source freshness\n5. SQL style violations\n6. Missing contracts on marts\n\nOutput a markdown report with Summary, Critical/Warning/Suggestion findings, file paths, and fixes.")
-              }]
-            }' > /tmp/request.json
-
-          HTTP_CODE=$(curl -s -w "%{http_code}" -o /tmp/response.json \
-            https://api.anthropic.com/v1/messages \
-            -H "content-type: application/json" \
-            -H "x-api-key: $ANTHROPIC_API_KEY" \
-            -H "anthropic-version: 2023-06-01" \
-            -d @/tmp/request.json)
-
-          echo "API response code: $HTTP_CODE"
-
-          if [ "$HTTP_CODE" != "200" ]; then
-            echo "API error:"
-            cat /tmp/response.json
-            exit 1
-          fi
-
-          jq -r '.content[0].text' /tmp/response.json > /tmp/review.md
-          echo "Review size: $(wc -c < /tmp/review.md) bytes"
-
-      - name: Create GitHub issue
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          if [ -s /tmp/review.md ] && [ "$(head -1 /tmp/review.md)" != "null" ]; then
+            Create a GitHub issue with your findings using:
             gh issue create \
               --title "Weekly: dbt codebase review ($(date +%Y-%m-%d))" \
               --label "automated" \
-              --body-file /tmp/review.md
-          else
-            echo "No review output generated"
-            cat /tmp/review.md 2>/dev/null || true
-            exit 1
-          fi
+              --body "$(your markdown report with:
+              - A summary of the codebase health
+              - Categorized findings (Critical, Warning, Suggestion)
+              - Specific file paths and line numbers
+              - Recommended fixes)"

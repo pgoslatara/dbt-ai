@@ -17,38 +17,55 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Claude Code
-        run: npm install -g @anthropic-ai/claude-code
+      - name: Gather codebase context
+        run: |
+          {
+            echo "## Project structure"
+            find models/ tests/ -type f | sort
+            echo ""
+            for f in models/**/*.yml; do
+              echo "### $f"
+              cat "$f"
+              echo ""
+            done
+            echo "## dbt_project.yml"
+            cat dbt_project.yml
+          } > /tmp/codebase_context.txt
 
-      - name: Run codebase review and create issue
+      - name: Run AI codebase review
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          CLAUDE_CODE_ACCEPT_TOS: "true"
+        run: |
+          CONTEXT=$(cat /tmp/codebase_context.txt | head -3000)
+
+          jq -n \
+            --arg context "$CONTEXT" \
+            '{
+              model: "claude-sonnet-4-6",
+              max_tokens: 4096,
+              messages: [{
+                role: "user",
+                content: ("Perform a comprehensive review of this dbt project for best practices.\n\nHere is the project:\n\n" + $context + "\n\nCheck for:\n1. Models without tests or documentation\n2. Naming convention violations (stg_, int_, dim_, fct_ prefixes)\n3. Incorrect materializations\n4. Missing source freshness checks\n5. SQL style violations\n6. Missing contracts on marts models\n7. Opportunities for incremental materializations\n\nOutput a markdown report with:\n- Summary of codebase health\n- Categorized findings (Critical, Warning, Suggestion)\n- Specific file paths\n- Recommended fixes")
+              }]
+            }' > /tmp/request.json
+
+          curl -s https://api.anthropic.com/v1/messages \
+            -H "content-type: application/json" \
+            -H "x-api-key: $ANTHROPIC_API_KEY" \
+            -H "anthropic-version: 2023-06-01" \
+            -d @/tmp/request.json \
+            | jq -r '.content[0].text' > /tmp/review.md
+
+      - name: Create GitHub issue
+        env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cat <<'PROMPT' | claude --print --dangerously-skip-permissions > /tmp/review.md
-          Perform a comprehensive review of this dbt project for best practices.
-
-          Check for:
-          1. Models without tests or documentation
-          2. Naming convention violations (stg_, int_, dim_, fct_ prefixes)
-          3. Incorrect materializations (staging should be views, marts should be tables)
-          4. Missing source freshness checks
-          5. SQL style violations (uppercase keywords, CTEs over subqueries)
-          6. Unused models or circular dependencies
-          7. Missing contracts on marts models
-          8. Opportunities for incremental materializations
-
-          Output ONLY a markdown report with:
-          - A summary of the codebase health
-          - Categorized findings (Critical, Warning, Suggestion)
-          - Specific file paths and line numbers
-          - Recommended fixes
-
-          Do not output anything other than the markdown report.
-          PROMPT
-
-          gh issue create \
-            --title "Weekly: dbt codebase review ($(date +%Y-%m-%d))" \
-            --label "automated" \
-            --body-file /tmp/review.md
+          if [ -s /tmp/review.md ] && [ "$(cat /tmp/review.md)" != "null" ]; then
+            gh issue create \
+              --title "Weekly: dbt codebase review ($(date +%Y-%m-%d))" \
+              --label "automated" \
+              --body-file /tmp/review.md
+          else
+            echo "No review output generated"
+            exit 1
+          fi

@@ -23,7 +23,8 @@ jobs:
             echo "## Project structure"
             find models/ tests/ -type f | sort
             echo ""
-            for f in models/**/*.yml; do
+            echo "## YAML configs"
+            find models/ -name '*.yml' -type f | sort | while read -r f; do
               echo "### $f"
               cat "$f"
               echo ""
@@ -31,12 +32,13 @@ jobs:
             echo "## dbt_project.yml"
             cat dbt_project.yml
           } > /tmp/codebase_context.txt
+          echo "Context size: $(wc -c < /tmp/codebase_context.txt) bytes"
 
       - name: Run AI codebase review
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
-          CONTEXT=$(cat /tmp/codebase_context.txt | head -3000)
+          CONTEXT=$(head -3000 /tmp/codebase_context.txt)
 
           jq -n \
             --arg context "$CONTEXT" \
@@ -45,27 +47,39 @@ jobs:
               max_tokens: 4096,
               messages: [{
                 role: "user",
-                content: ("Perform a comprehensive review of this dbt project for best practices.\n\nHere is the project:\n\n" + $context + "\n\nCheck for:\n1. Models without tests or documentation\n2. Naming convention violations (stg_, int_, dim_, fct_ prefixes)\n3. Incorrect materializations\n4. Missing source freshness checks\n5. SQL style violations\n6. Missing contracts on marts models\n7. Opportunities for incremental materializations\n\nOutput a markdown report with:\n- Summary of codebase health\n- Categorized findings (Critical, Warning, Suggestion)\n- Specific file paths\n- Recommended fixes")
+                content: ("Review this dbt project for best practices.\n\n" + $context + "\n\nCheck for:\n1. Models without tests or documentation\n2. Naming convention violations\n3. Incorrect materializations\n4. Missing source freshness\n5. SQL style violations\n6. Missing contracts on marts\n\nOutput a markdown report with Summary, Critical/Warning/Suggestion findings, file paths, and fixes.")
               }]
             }' > /tmp/request.json
 
-          curl -s https://api.anthropic.com/v1/messages \
+          HTTP_CODE=$(curl -s -w "%{http_code}" -o /tmp/response.json \
+            https://api.anthropic.com/v1/messages \
             -H "content-type: application/json" \
             -H "x-api-key: $ANTHROPIC_API_KEY" \
             -H "anthropic-version: 2023-06-01" \
-            -d @/tmp/request.json \
-            | jq -r '.content[0].text' > /tmp/review.md
+            -d @/tmp/request.json)
+
+          echo "API response code: $HTTP_CODE"
+
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "API error:"
+            cat /tmp/response.json
+            exit 1
+          fi
+
+          jq -r '.content[0].text' /tmp/response.json > /tmp/review.md
+          echo "Review size: $(wc -c < /tmp/review.md) bytes"
 
       - name: Create GitHub issue
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if [ -s /tmp/review.md ] && [ "$(cat /tmp/review.md)" != "null" ]; then
+          if [ -s /tmp/review.md ] && [ "$(head -1 /tmp/review.md)" != "null" ]; then
             gh issue create \
               --title "Weekly: dbt codebase review ($(date +%Y-%m-%d))" \
               --label "automated" \
               --body-file /tmp/review.md
           else
             echo "No review output generated"
+            cat /tmp/review.md 2>/dev/null || true
             exit 1
           fi

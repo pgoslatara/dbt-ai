@@ -1,0 +1,86 @@
+name: Fix CI Failure
+
+on:
+  workflow_run:
+    workflows: ["CI Pipeline"]
+    types: [completed]
+
+jobs:
+  analyze:
+    name: Analyze CI Failure and Comment on PR
+    if: github.event.workflow_run.conclusion == 'failure' && github.event.workflow_run.event == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Get PR number
+        id: pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          PR_NUMBER=$(gh api \
+            "repos/${{ github.repository }}/commits/${HEAD_SHA}/pulls" \
+            --jq '.[0].number // empty')
+
+          if [ -z "$PR_NUMBER" ]; then
+            echo "No PR found for this commit."
+            exit 0
+          fi
+
+          echo "number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+          echo "Found PR #$PR_NUMBER"
+
+      - name: Fetch failed logs
+        if: steps.pr.outputs.number
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+        run: |
+          gh run view "$RUN_ID" \
+            --repo "${{ github.repository }}" \
+            --log-failed > /tmp/ci_failed_logs.txt 2>&1 || true
+
+          # Truncate to avoid token limits
+          {
+            echo "CI_FAILED_LOGS<<LOGS_EOF"
+            tail -300 /tmp/ci_failed_logs.txt
+            echo "LOGS_EOF"
+          } >> "$GITHUB_ENV"
+
+      - name: Analyze and comment with Claude
+        if: steps.pr.outputs.number
+        uses: anthropics/claude-code-action@v1
+        env:
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          direct_prompt: |
+            The CI pipeline failed on PR #${{ steps.pr.outputs.number }} in this dbt project.
+
+            Failed CI logs (last 300 lines):
+
+            ${{ env.CI_FAILED_LOGS }}
+
+            Analyze the failure and post a comment on PR #${{ steps.pr.outputs.number }} with:
+
+            1. **Root cause**: What failed and why (be specific — name the step, model, or test)
+            2. **Suggested fix**: Concrete code changes to resolve the issue
+            3. **Commands to verify**: What the developer should run locally to confirm the fix
+
+            Format the comment clearly with markdown headers. Be concise and actionable.
+            Do NOT create a branch or PR — just post the comment.
+
+            Use this command to post:
+            gh pr comment ${{ steps.pr.outputs.number }} --body "<your analysis>"
+          use_claude_code: true

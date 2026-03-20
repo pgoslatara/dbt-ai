@@ -12,7 +12,8 @@ renamed AS (
         latitude,
         longitude,
         name AS station_name,
-        status
+        status,
+        nonexistent_column AS broken_column
     FROM source
 )
 

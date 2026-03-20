@@ -41,11 +41,13 @@ jobs:
           gcloud run jobs update dbt-ai-build \
             --image="${{ env.REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT }}/dbt-ai/dbt-ai:${{ github.sha }}" \
             --region="${{ env.REGION }}" \
+            --service-account="${{ secrets.GCP_SERVICE_ACCOUNT }}" \
             --task-timeout=1800 \
             --max-retries=1 \
             2>/dev/null \
           || gcloud run jobs create dbt-ai-build \
             --image="${{ env.REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT }}/dbt-ai/dbt-ai:${{ github.sha }}" \
             --region="${{ env.REGION }}" \
+            --service-account="${{ secrets.GCP_SERVICE_ACCOUNT }}" \
             --task-timeout=1800 \
             --max-retries=1

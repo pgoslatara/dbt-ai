@@ -30,15 +30,23 @@ jobs:
       - name: Execute Cloud Run Job
         id: execute
         run: |
-          EXECUTION=$(gcloud run jobs execute dbt-ai-build \
+          # Execute and capture the execution name from the output
+          gcloud run jobs execute dbt-ai-build \
             --region="${{ env.REGION }}" \
             --wait \
-            --format="value(metadata.name)" \
-            2>&1) || true
-          echo "execution=$EXECUTION" >> "$GITHUB_OUTPUT"
+            2>&1 | tee /tmp/execution_output.txt || true
+
+          # Extract execution name from the latest execution
+          EXEC_NAME=$(gcloud run jobs executions list \
+            --job=dbt-ai-build \
+            --region="${{ env.REGION }}" \
+            --sort-by="~createTime" \
+            --limit=1 \
+            --format="value(metadata.name)")
+          echo "execution_name=$EXEC_NAME" >> "$GITHUB_OUTPUT"
 
           # Check execution status
-          STATUS=$(gcloud run jobs executions describe "$EXECUTION" \
+          STATUS=$(gcloud run jobs executions describe "$EXEC_NAME" \
             --region="${{ env.REGION }}" \
             --format="value(status.conditions[0].type)" \
             2>/dev/null) || STATUS="Failed"
@@ -52,9 +60,9 @@ jobs:
       - name: Trigger fix workflow on failure
         if: failure()
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PAT_GITHUB }}
         run: |
           gh workflow run fix_cloud_run_failure.yml \
             --repo "${{ github.repository }}" \
-            -f execution_name="${{ steps.execute.outputs.execution }}" \
+            -f execution_name="${{ steps.execute.outputs.execution_name }}" \
             -f trigger_source="daily_pipeline"

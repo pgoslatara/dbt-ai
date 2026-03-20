@@ -17,31 +17,35 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Run Claude codebase review
-        uses: anthropics/claude-code-action@v1
-        with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          direct_prompt: |
-            Perform a comprehensive review of this dbt project for best practices.
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
 
-            Check for:
-            1. Models without tests or documentation
-            2. Naming convention violations (stg_, int_, dim_, fct_ prefixes)
-            3. Incorrect materializations (staging should be views, marts should be tables)
-            4. Missing source freshness checks
-            5. SQL style violations (uppercase keywords, CTEs over subqueries)
-            6. Unused models or circular dependencies
-            7. Missing contracts on marts models
-            8. Opportunities for incremental materializations
+      - name: Run codebase review and create issue
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          claude -p "Perform a comprehensive review of this dbt project for best practices.
 
-            Create a GitHub issue with your findings using:
-            gh issue create \
-              --title "Weekly: dbt codebase review ($(date +%Y-%m-%d))" \
-              --label "automated,code-quality" \
-              --body "<your findings formatted as markdown with:
-              - A summary of the codebase health
-              - Categorized findings (Critical, Warning, Suggestion)
-              - Specific file paths and line numbers
-              - Recommended fixes>"
-          use_claude_code: true
+          Check for:
+          1. Models without tests or documentation
+          2. Naming convention violations (stg_, int_, dim_, fct_ prefixes)
+          3. Incorrect materializations (staging should be views, marts should be tables)
+          4. Missing source freshness checks
+          5. SQL style violations (uppercase keywords, CTEs over subqueries)
+          6. Unused models or circular dependencies
+          7. Missing contracts on marts models
+          8. Opportunities for incremental materializations
+
+          Output ONLY a markdown report with:
+          - A summary of the codebase health
+          - Categorized findings (Critical, Warning, Suggestion)
+          - Specific file paths and line numbers
+          - Recommended fixes
+
+          Do not output anything other than the markdown report." > /tmp/review.md
+
+          gh issue create \
+            --title "Weekly: dbt codebase review ($(date +%Y-%m-%d))" \
+            --label "automated" \
+            --body-file /tmp/review.md

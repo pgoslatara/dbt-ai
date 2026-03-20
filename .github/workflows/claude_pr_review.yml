@@ -23,7 +23,8 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          review_prompt: |
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prompt: |
             Review this PR as a senior dbt/analytics engineer. Focus on:
 
             1. **SQL Style**: Uppercase keywords, snake_case names, one column per line, table aliases in joins, CTEs over subqueries.

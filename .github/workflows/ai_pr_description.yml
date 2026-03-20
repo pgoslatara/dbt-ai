@@ -23,8 +23,9 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          direct_prompt: |
-            Analyze the diff for this PR and generate a business-friendly description.
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prompt: |
+            Analyze the diff for this PR and update the PR description with a business-friendly summary.
 
             Structure:
             ## Summary
@@ -40,4 +41,4 @@ jobs:
             Describe downstream impact on other models or dashboards.
 
             Keep it concise and focused on business value, not implementation details.
-          update_description: true
+            Update the PR description using gh pr edit.

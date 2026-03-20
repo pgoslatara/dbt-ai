@@ -105,7 +105,8 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          direct_prompt: |
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prompt: |
             A Cloud Run Job execution of our dbt project has failed.
 
             Execution: ${{ steps.resolve.outputs.execution_name }}
@@ -128,4 +129,3 @@ jobs:
             Focus on the most likely cause: SQL errors, schema changes, source
             freshness issues, or configuration problems. If you cannot determine
             a code fix (e.g., infrastructure issue), create an issue instead of a PR.
-          use_claude_code: true

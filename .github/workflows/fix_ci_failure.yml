@@ -65,7 +65,8 @@ jobs:
           RUN_ID: ${{ github.event.workflow_run.id }}
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          direct_prompt: |
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prompt: |
             The CI pipeline failed on PR #${{ steps.pr.outputs.number }} in this dbt project.
 
             Failed CI logs (last 300 lines):
@@ -83,4 +84,3 @@ jobs:
 
             Use this command to post:
             gh pr comment ${{ steps.pr.outputs.number }} --body "<your analysis>"
-          use_claude_code: true

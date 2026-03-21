@@ -1,0 +1,27 @@
+exposures:
+  - name: bikeshare_operations_dashboard
+    description: >
+      Operational dashboard for monitoring station utilization,
+      trip patterns, and rebalancing needs across cities.
+    type: dashboard
+    maturity: medium
+    depends_on:
+      - ref('dim_stations')
+      - ref('fct_daily_station_metrics')
+      - ref('fct_trips')
+    owner:
+      name: Philip Oslatara
+      email: philip@example.com
+
+  - name: weekly_station_report
+    description: >
+      Weekly automated report on station performance, trip volume trends,
+      and recommendations for station rebalancing.
+    type: analysis
+    maturity: medium
+    depends_on:
+      - ref('dim_stations')
+      - ref('fct_daily_station_metrics')
+    owner:
+      name: Philip Oslatara
+      email: philip@example.com

@@ -182,6 +182,9 @@ unit_tests:
   - name: test_daily_metrics_aggregation
     description: Daily metrics correctly aggregate trips per station per day
     model: fct_daily_station_metrics
+    overrides:
+      macros:
+        is_incremental: false
     given:
       - input: ref('int_trips_unioned')
         rows:

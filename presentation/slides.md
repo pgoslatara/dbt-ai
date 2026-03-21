@@ -64,9 +64,10 @@ Philip Oslatara
 2. AI as a teammate (not a tool)
 3. Teaching AI your conventions
 4. Automated code review
-5. Agentic workflows
-6. **Live demo**
-7. Lessons learned
+5. Agentic workflows & data quality monitoring
+6. Unit tests & hooks
+7. **Live demo**
+8. Lessons learned
 
 <!-- Speaker notes: Here's what we'll cover in the next 20 minutes. The live demo is about 6 minutes — I'll generate a model, open a PR, and show the AI in action. ~30 seconds -->
 
@@ -145,21 +146,46 @@ Purpose-built AI skills from **dbt Labs**:
 
 # Custom Slash Commands
 
+| Command | What it does |
+|---------|-------------|
+| `/generate-staging-model` | Full model + YAML + tests from source |
+| `/add-tests` | Comprehensive tests for any model |
+| `/document-model` | Descriptions for model + columns |
+| `/explain-model` | Plain-English model explanation |
+| `/suggest-tests` | Analyze and propose missing tests |
+| `/impact-analysis` | Trace downstream dependencies |
+| `/generate-unit-tests` | Unit tests for computed columns |
+| `/review-sql` | BigQuery performance review |
+| `/generate-exposure` | Exposure from description |
+
+**9 commands** — each encodes project conventions from CLAUDE.md.
+
+<!-- Speaker notes: We went from 3 commands to 9. Each one encodes our project's conventions. Any developer can use them without knowing the patterns by heart. ~1 minute -->
+
+---
+
+# dbt Unit Tests (v1.8+)
+
+Test transformation logic with **mock data — no database needed**:
+
+```yaml
+unit_tests:
+  - name: test_is_round_trip_true
+    model: fct_trips
+    given:
+      - input: ref('int_trips_unioned')
+        rows:
+          - {start_station_id: "s1", end_station_id: "s1"}
+    expect:
+      rows:
+        - {is_round_trip: true}
 ```
-/generate-staging-model austin_bikeshare.bikeshare_trips
-```
 
-Generates:
-- SQL file with CTE pattern (`source` -> `renamed` -> `SELECT`)
-- Source YAML with freshness checks
-- Model YAML with column descriptions and tests
-- Correct naming and placement
+- Tests computed columns: `is_round_trip`, `is_weekend`, `day_of_week`
+- Claude generates them via `/generate-unit-tests`
+- Runs locally in seconds — fast feedback loop
 
-Also available:
-- `/add-tests <model>` — add comprehensive tests
-- `/document-model <model>` — add documentation
-
-<!-- Speaker notes: These are custom prompts stored in .claude/commands/. They encode your project's patterns so any developer can generate consistent models. ~1 minute -->
+<!-- Speaker notes: Unit tests are new in dbt 1.8. They let you test business logic without hitting the database. Claude can generate them automatically by reading your SQL. ~1.5 minutes -->
 
 ---
 
@@ -207,6 +233,53 @@ AI scans the entire project for:
 - Missing source freshness checks
 
 <!-- Speaker notes: These run on a weekly cron schedule. The abandoned models check uses the dbt manifest and BigQuery metadata. The codebase review is a full AI audit. Both create GitHub issues automatically. ~2 minutes -->
+
+---
+
+# Data Quality Monitoring
+
+```
+Weekly cron ──→ Query BigQuery metrics
+                       │
+              Compare vs 30-day baseline
+                       │
+                z-score > 2?
+                       │
+              Claude analyzes anomalies
+                       │
+              Create GitHub Issue
+              (Alert / Warning / Info)
+```
+
+- Trip volume spikes or drops
+- Duration anomalies by city
+- Data freshness (>3 days stale)
+- Station count changes
+
+<!-- Speaker notes: This is the newest workflow. It queries production data, not code. Claude analyzes statistical anomalies and creates categorized issues. It catches problems that code review never will. ~1.5 minutes -->
+
+---
+
+# Claude Code Hooks
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [{
+      "matcher": "Write|Edit",
+      "hooks": [{
+        "command": "sqlfmt --check $FILE"
+      }]
+    }]
+  }
+}
+```
+
+- **PostToolUse**: Auto-checks SQL formatting after every edit
+- Hooks fire automatically — no manual step needed
+- Catches issues before they reach pre-commit
+
+<!-- Speaker notes: Hooks wire AI into your git workflow. When Claude edits a SQL file, sqlfmt automatically checks it. The AI sees the feedback and self-corrects. ~1 minute -->
 
 ---
 
@@ -321,11 +394,14 @@ Staging (source-specific) -> Intermediate (unified) -> Marts (business metrics)
 - PR review catches 80% of style/convention issues
 - Slash commands dramatically speed up new model creation
 - Abandoned model detection prevents BigQuery cost creep
+- Unit tests catch logic bugs before they hit the warehouse
+- Data quality monitoring catches issues that code review never will
 
 **What to watch out for:**
 - AI can be confidently wrong — always review generated code
 - Token costs add up with large diffs
 - Keep CLAUDE.md updated as conventions evolve
+- Unit test mock data needs to match your column types exactly
 
 <!-- Speaker notes: Be honest about limitations. AI is a teammate, not a replacement. The cost is real but worth it for the time saved. ~1.5 minutes -->
 

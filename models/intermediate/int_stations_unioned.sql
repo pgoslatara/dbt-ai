@@ -24,6 +24,24 @@ unioned AS (
     SELECT * FROM austin_stations
     UNION ALL
     SELECT * FROM nyc_stations
+),
+
+city_metadata AS (
+    SELECT * FROM {{ ref('city_metadata') }}
+),
+
+enriched AS (
+    SELECT
+        u.station_id,
+        u.city,
+        cm.city_full_name,
+        u.latitude,
+        u.longitude,
+        u.station_name,
+        cm.timezone
+    FROM unioned AS u
+    LEFT JOIN city_metadata AS cm
+        ON u.city = cm.city
 )
 
-SELECT * FROM unioned
+SELECT * FROM enriched

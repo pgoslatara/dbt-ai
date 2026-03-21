@@ -1,0 +1,26 @@
+seeds:
+  - name: city_metadata
+    description: >
+      Reference data for cities in the bikeshare network, including
+      full names and timezones.
+    columns:
+      - name: city
+        description: Short city identifier matching the city column across all models
+        tests:
+          - not_null
+          - unique
+
+      - name: city_full_name
+        description: Full display name of the city
+        tests:
+          - not_null
+
+      - name: country
+        description: Country where the city is located
+        tests:
+          - not_null
+
+      - name: timezone
+        description: IANA timezone identifier for the city
+        tests:
+          - not_null

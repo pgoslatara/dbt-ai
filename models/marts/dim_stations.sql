@@ -13,9 +13,11 @@ final AS (
         s.station_id,
         COALESCE(tm.avg_trip_duration_minutes, 0) AS avg_trip_duration_minutes,
         s.city,
+        s.city_full_name,
         s.latitude,
         s.longitude,
         s.station_name,
+        s.timezone,
         COALESCE(tm.total_trips, 0) AS total_trips
     FROM stations AS s
     LEFT JOIN trip_metrics AS tm

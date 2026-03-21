@@ -16,6 +16,11 @@ models:
           - accepted_values:
               values: ["austin", "new_york"]
 
+      - name: city_full_name
+        description: Full display name of the city
+        tests:
+          - not_null
+
       - name: latitude
         description: Latitude coordinate of the station
         tests:
@@ -28,6 +33,11 @@ models:
 
       - name: station_name
         description: Human-readable name of the station
+        tests:
+          - not_null
+
+      - name: timezone
+        description: IANA timezone identifier for the city
         tests:
           - not_null
 

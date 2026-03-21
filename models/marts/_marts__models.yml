@@ -16,6 +16,10 @@ models:
       - name: avg_trip_duration_minutes
         data_type: FLOAT64
         description: Average trip duration in minutes for trips starting at this station
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
 
       - name: city
         data_type: STRING
@@ -46,6 +50,10 @@ models:
       - name: total_trips
         data_type: INT64
         description: Total number of trips starting at this station
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
 
   - name: fct_daily_station_metrics
     description: >
@@ -117,6 +125,8 @@ models:
       - name: end_station_id
         data_type: STRING
         description: Station where the trip ended
+        tests:
+          - not_null
 
       - name: ended_at
         data_type: TIMESTAMP
@@ -151,3 +161,7 @@ models:
       - name: trip_duration_minutes
         data_type: FLOAT64
         description: Duration of the trip in minutes
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0

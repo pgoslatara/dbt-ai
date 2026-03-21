@@ -74,9 +74,13 @@ models:
 
       - name: duration_minutes
         description: Duration of the trip in minutes
+        tests:
+          - not_null
 
       - name: end_station_id
         description: Station where the trip ended
+        tests:
+          - not_null
 
       - name: ended_at
         description: Timestamp when the trip ended

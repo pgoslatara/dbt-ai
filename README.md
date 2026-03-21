@@ -76,6 +76,15 @@ chmod +x scripts/setup_gcp.sh
 
 This creates the project, enables APIs, sets up a service account with Workload Identity Federation for keyless CI/CD authentication, and prints the GitHub Secrets you need to configure.
 
+#### Required GitHub Secrets
+
+| Secret | Description |
+|--------|-------------|
+| `GCP_PROJECT_ID` | GCP project ID |
+| `GCP_SERVICE_ACCOUNT` | Service account email for CI/CD |
+| `GCP_WORKLOAD_IDENTITY_PROVIDER` | Workload Identity Federation provider resource name |
+| `PAT_GITHUB` | GitHub Personal Access Token with `repo` and `workflow` scopes, used for cross-workflow triggers |
+
 ### Installation
 
 ```bash
@@ -104,6 +113,8 @@ make docs       # Generate and serve dbt docs
 | AI PR Description | PR open | Auto-generated PR description |
 | Abandoned Models | Weekly (Monday) | Detect orphaned BigQuery tables |
 | Codebase Review | Weekly (Monday) | AI best-practice audit |
+| Fix CI Failure | CI Pipeline failure | Analyze failure logs and comment fix suggestions on PR |
+| Fix Cloud Run Failure | Cloud Run Job failure / `repository_dispatch` | Analyze logs, create fix PR |
 
 ## Data Sources
 

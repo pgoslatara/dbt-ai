@@ -39,6 +39,7 @@ for ROLE in \
     "roles/artifactregistry.writer" \
     "roles/bigquery.dataEditor" \
     "roles/bigquery.jobUser" \
+    "roles/logging.viewer" \
     "roles/run.admin"; do
     gcloud projects add-iam-policy-binding "${PROJECT_ID}" \
         --member="serviceAccount:${SA_EMAIL}" \

@@ -5,19 +5,17 @@ sources:
     loader: bigquery_public_datasets
     schema: austin_bikeshare
 
-    freshness:
-      warn_after:
-        count: 30
-        period: day
-      error_after:
-        count: 365
-        period: day
-
-    loaded_at_field: modified_date
-
     tables:
       - name: bikeshare_stations
         description: Station location and capacity information for Austin B-cycle stations
+        freshness:
+          warn_after:
+            count: 30
+            period: day
+          error_after:
+            count: 365
+            period: day
+        loaded_at_field: modified_date
         columns:
           - name: station_id
             description: Unique identifier for the station

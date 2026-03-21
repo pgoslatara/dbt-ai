@@ -177,7 +177,7 @@ Every PR gets reviewed by Claude as a **senior dbt engineer**:
 # .github/workflows/claude_pr_review.yml
 uses: anthropics/claude-code-action@v1
 with:
-  review_prompt: |
+  prompt: |
     Review this PR as a senior dbt/analytics engineer...
 ```
 
@@ -207,6 +207,35 @@ AI scans the entire project for:
 - Missing source freshness checks
 
 <!-- Speaker notes: These run on a weekly cron schedule. The abandoned models check uses the dbt manifest and BigQuery metadata. The codebase review is a full AI audit. Both create GitHub issues automatically. ~2 minutes -->
+
+---
+
+# Automated Failure Remediation
+
+## CI Pipeline Fails on a PR
+
+```
+PR push → CI fails → Fix CI Failure workflow
+                           │
+                   Claude analyzes logs
+                           │
+                   Posts fix suggestion
+                   as PR comment
+```
+
+## Cloud Run Job Fails (Daily Build)
+
+```
+Cloud Run fails → Cloud Monitoring alert
+                       │
+              GitHub repository_dispatch
+                       │
+              Claude creates fix PR
+```
+
+**Self-healing pipelines** — failures are analyzed and fixes proposed automatically.
+
+<!-- Speaker notes: This is where it gets really interesting. When CI fails on a PR, Claude automatically analyzes the logs and posts a comment with the root cause and suggested fix. For production failures, it goes further and creates a fix PR. ~2 minutes -->
 
 ---
 

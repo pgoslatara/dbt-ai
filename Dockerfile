@@ -20,5 +20,8 @@ WORKDIR /app
 
 COPY --from=builder /app /app
 
+RUN useradd -r -s /usr/sbin/nologin dbt
+USER dbt
+
 ENTRYPOINT ["uv", "run", "dbt"]
 CMD ["build", "--target", "prod"]

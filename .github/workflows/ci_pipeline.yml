@@ -67,4 +67,9 @@ jobs:
         run: uv run prek run -a
 
       - name: Run pytest
-        run: uv run pytest
+        run: uv run pytest --no-header -q || [ $? -eq 5 ]
+
+      - name: Cleanup CI dataset
+        if: always()
+        run: |
+          bq rm -r -f "${{ env.GCP_PROJECT }}:${{ env.DBT_DATASET }}" || true

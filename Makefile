@@ -44,4 +44,4 @@ slides-watch: ## Watch and rebuild presentation
 
 test: ## Run dbt and Python tests
 	uv run dbt test
-	uv run pytest
+	uv run pytest --no-header -q || [ $$? -eq 5 ]

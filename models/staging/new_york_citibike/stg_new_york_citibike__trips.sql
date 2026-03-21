@@ -14,7 +14,7 @@ renamed AS (
         stoptime AS ended_at,
         CAST(start_station_id AS STRING) AS start_station_id,
         starttime AS started_at,
-        GENERATE_UUID() AS trip_id,
+        {{ dbt_utils.generate_surrogate_key(['bikeid', 'starttime', 'start_station_id']) }} AS trip_id,
         usertype AS user_type
     FROM source
 )

@@ -22,6 +22,14 @@ sources:
 
       - name: bikeshare_trips
         description: Individual trip records for Austin B-cycle bikeshare
+        freshness:
+          warn_after:
+            count: 30
+            period: day
+          error_after:
+            count: 365
+            period: day
+        loaded_at_field: modified_date
         columns:
           - name: trip_id
             description: Unique identifier for the trip

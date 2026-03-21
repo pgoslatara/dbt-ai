@@ -2,12 +2,11 @@ manifest_checks:
   - name: check_model_has_contracts_enforced
     include: "^models/marts"
 
-  - name: check_model_has_description
+  - name: check_model_description_populated
     include: "^models"
 
-  - name: check_model_has_tests
-    include: "^models"
-    min_number_of_tests: 1
+  - name: check_model_test_coverage
+    min_model_test_coverage_pct: 100
 
   - name: check_model_names
     include: "^models/intermediate"
@@ -21,13 +20,13 @@ manifest_checks:
     include: "^models/staging"
     model_name_pattern: "^stg_"
 
-  - name: check_source_has_description
+  - name: check_source_description_populated
     include: "^models"
 
-  - name: check_source_has_freshness
+  - name: check_source_freshness_populated
     include: "^models"
 
-  - name: check_source_has_loader
+  - name: check_source_loader_populated
     include: "^models"
 
 run_results_checks:

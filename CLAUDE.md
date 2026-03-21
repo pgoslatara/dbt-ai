@@ -34,6 +34,8 @@ Bike-share analytics dbt project using two public BigQuery datasets (NYC Citi Bi
 - Every model must have at least one test
 - Use `dbt_expectations` for range and pattern checks
 - Use `dbt_utils` for generic utility macros
+- Use dbt unit tests for computed column logic (e.g., `is_round_trip`, `is_weekend`)
+- Define exposures in `models/marts/_marts__exposures.yml` for downstream consumers
 
 ## Development Commands
 
@@ -48,6 +50,20 @@ make docs       # Generate and serve dbt docs
 make clean      # Remove build artifacts
 make slides     # Build presentation HTML
 ```
+
+## Custom Slash Commands
+
+| Command | Description |
+|---------|-------------|
+| `/add-tests <model>` | Add comprehensive tests to a model |
+| `/document-model <model>` | Add documentation to a model |
+| `/explain-model <model>` | Explain a model's purpose, lineage, and data quality |
+| `/generate-exposure <description>` | Generate an exposure from a plain-English description |
+| `/generate-staging-model <source.table>` | Generate a staging model from a source |
+| `/generate-unit-tests <model>` | Generate dbt unit tests for computed columns |
+| `/impact-analysis <model>` | Analyze downstream impact of changing a model |
+| `/review-sql` | Review SQL for BigQuery performance anti-patterns |
+| `/suggest-tests <model>` | Suggest missing tests for a model |
 
 ## GCP Interaction
 

@@ -1,10 +1,10 @@
+---
 sources:
   - name: new_york_citibike
     database: bigquery-public-data
     description: NYC Citi Bike bikeshare public dataset
     loader: bigquery_public_datasets
     schema: new_york_citibike
-
     tables:
       - name: citibike_stations
         description: Station location and capacity information for NYC Citi Bike stations
@@ -19,7 +19,6 @@ sources:
         columns:
           - name: station_id
             description: Unique identifier for the station
-
       - name: citibike_trips
         description: Individual trip records for NYC Citi Bike bikeshare
         freshness:

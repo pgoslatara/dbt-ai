@@ -1,6 +1,6 @@
+---
 dbt_ai:
   target: dev
-
   outputs:
     ci:
       dataset: "{{ env_var('DBT_DATASET', 'ci') }}"
@@ -12,7 +12,6 @@ dbt_ai:
       project: "{{ env_var('GCP_PROJECT', 'dbt-ai-demo') }}"
       threads: 4
       type: bigquery
-
     dev:
       dataset: dbt_ai_dev
       job_execution_timeout_seconds: 300
@@ -23,7 +22,6 @@ dbt_ai:
       project: "{{ env_var('GCP_PROJECT', 'dbt-ai-demo') }}"
       threads: 4
       type: bigquery
-
     prod:
       dataset: dbt_ai_prod
       job_execution_timeout_seconds: 300

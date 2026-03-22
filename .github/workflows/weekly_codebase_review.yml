@@ -1,8 +1,9 @@
+---
 name: Weekly Codebase Review
 
 on:
   schedule:
-    - cron: "0 9 * * 1"
+    - cron: 0 9 * * 1
   workflow_dispatch:
 
 jobs:
@@ -12,20 +13,17 @@ jobs:
     permissions:
       contents: read
       issues: write
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Run codebase review
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          claude_args: "--allowedTools bash computer edit write"
+          claude_args: --allowedTools bash computer edit write
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          prompt: |
+          prompt: |-
             Perform a comprehensive review of this dbt project for best practices.
-
             Check for:
             1. Models without tests or documentation
             2. Naming convention violations (stg_, int_, dim_, fct_ prefixes)
@@ -35,7 +33,6 @@ jobs:
             6. Unused models or circular dependencies
             7. Missing contracts on marts models
             8. Opportunities for incremental materializations
-
             Create a GitHub issue with your findings using:
             gh issue create \
               --title "Weekly: dbt codebase review ($(date +%Y-%m-%d))" \

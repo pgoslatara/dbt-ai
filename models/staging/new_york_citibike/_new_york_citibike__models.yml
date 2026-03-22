@@ -1,3 +1,4 @@
+---
 models:
   - name: stg_new_york_citibike__stations
     description: Cleaned and standardized NYC Citi Bike bikeshare stations
@@ -7,7 +8,6 @@ models:
         tests:
           - not_null
           - unique
-
       - name: capacity
         description: Number of bike docks at the station
         tests:
@@ -15,14 +15,13 @@ models:
           - dbt_expectations.expect_column_values_to_be_between:
               min_value: 0
               max_value: 200
-
       - name: city
         description: City where the station is located
         tests:
           - not_null
           - accepted_values:
-              values: ["new_york"]
-
+              values:
+                - new_york
       - name: latitude
         description: Latitude coordinate of the station
         tests:
@@ -30,7 +29,6 @@ models:
           - dbt_expectations.expect_column_values_to_be_between:
               min_value: 40
               max_value: 42
-
       - name: longitude
         description: Longitude coordinate of the station
         tests:
@@ -38,12 +36,10 @@ models:
           - dbt_expectations.expect_column_values_to_be_between:
               min_value: -75
               max_value: -73
-
       - name: station_name
         description: Human-readable name of the station
         tests:
           - not_null
-
   - name: stg_new_york_citibike__trips
     description: Cleaned and standardized NYC Citi Bike bikeshare trips
     columns:
@@ -54,24 +50,21 @@ models:
           - unique:
               config:
                 severity: warn
-
       - name: bike_id
         description: Unique identifier for the bike used
         tests:
           - not_null:
               config:
                 severity: warn
-
       - name: city
         description: City where the trip occurred
         tests:
           - not_null
           - accepted_values:
-              values: ["new_york"]
-
+              values:
+                - new_york
       - name: duration_minutes
         description: Duration of the trip in minutes
-
       - name: end_station_id
         description: Station where the trip ended
         tests:
@@ -80,14 +73,12 @@ models:
               field: station_id
               config:
                 severity: warn
-
       - name: ended_at
         description: Timestamp when the trip ended
         tests:
           - not_null:
               config:
                 severity: warn
-
       - name: start_station_id
         description: Station where the trip started
         tests:
@@ -99,13 +90,11 @@ models:
               field: station_id
               config:
                 severity: warn
-
       - name: started_at
         description: Timestamp when the trip started
         tests:
           - not_null:
               config:
                 severity: warn
-
       - name: user_type
         description: Type of user (subscriber or customer)

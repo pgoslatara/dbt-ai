@@ -1,8 +1,10 @@
+---
 name: AI PR Description
 
 on:
   pull_request:
-    types: [opened]
+    types:
+      - opened
 
 jobs:
   describe:
@@ -12,21 +14,18 @@ jobs:
       contents: read
       id-token: write
       pull-requests: write
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
       - name: Generate PR description
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          prompt: |
+          prompt: |-
             Analyze the diff for this PR and update the PR description with a business-friendly summary.
-
             Structure:
             ## Summary
             Brief overview of what changed and why.
@@ -39,6 +38,5 @@ jobs:
 
             ## Impact
             Describe downstream impact on other models or dashboards.
-
             Keep it concise and focused on business value, not implementation details.
             Update the PR description using gh pr edit.

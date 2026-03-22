@@ -1,3 +1,4 @@
+---
 exposures:
   - name: bikeshare_operations_dashboard
     description: >
@@ -12,7 +13,6 @@ exposures:
     owner:
       name: Philip Oslatara
       email: philip@example.com
-
   - name: weekly_station_report
     description: >
       Weekly automated report on station performance, trip volume trends,

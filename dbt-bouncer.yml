@@ -1,37 +1,29 @@
+---
 manifest_checks:
   - name: check_model_has_contracts_enforced
-    include: "^models/marts"
-
+    include: ^models/marts
   - name: check_model_description_populated
-    include: "^models"
-
+    include: ^models
   - name: check_model_test_coverage
     min_model_test_coverage_pct: 100
-
   - name: check_model_names
-    include: "^models/intermediate"
-    model_name_pattern: "^int_"
-
+    include: ^models/intermediate
+    model_name_pattern: ^int_
   - name: check_model_names
-    include: "^models/marts"
-    model_name_pattern: "^(dim_|fct_)"
-
+    include: ^models/marts
+    model_name_pattern: ^(dim_|fct_)
   - name: check_model_names
-    include: "^models/staging"
-    model_name_pattern: "^stg_"
-
+    include: ^models/staging
+    model_name_pattern: ^stg_
   - name: check_source_description_populated
-    include: "^models"
-
+    include: ^models
   - name: check_source_freshness_populated
-    include: "^models"
-
+    include: ^models
   - name: check_source_loader_populated
-    include: "^models"
+    include: ^models
 
 run_results_checks:
   - name: check_run_results_max_execution_time
     max_execution_time_seconds: 300
-
   - name: check_run_results_max_gigabytes_billed
     max_gigabytes_billed: 10

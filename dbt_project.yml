@@ -1,6 +1,6 @@
+---
 name: dbt_ai
-version: "0.1.0"
-
+version: 0.1.0
 config-version: 2
 profile: dbt_ai
 

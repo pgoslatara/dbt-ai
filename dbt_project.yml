@@ -22,6 +22,7 @@ models:
     intermediate:
       +materialized: view
       +schema: intermediate
+      +severity: warn
     marts:
       +materialized: table
       +schema: marts

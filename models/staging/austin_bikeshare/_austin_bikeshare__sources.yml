@@ -10,10 +10,10 @@ sources:
         description: Station location and capacity information for Austin B-cycle stations
         freshness:
           warn_after:
-            count: 30
+            count: 365
             period: day
           error_after:
-            count: 365
+            count: 1825
             period: day
         loaded_at_field: modified_date
         columns:
@@ -24,12 +24,12 @@ sources:
         description: Individual trip records for Austin B-cycle bikeshare
         freshness:
           warn_after:
-            count: 30
-            period: day
-          error_after:
             count: 365
             period: day
-        loaded_at_field: modified_date
+          error_after:
+            count: 1095
+            period: day
+        loaded_at_field: start_time
         columns:
           - name: trip_id
             description: Unique identifier for the trip

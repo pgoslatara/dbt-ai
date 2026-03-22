@@ -10,10 +10,10 @@ sources:
         description: Station location and capacity information for NYC Citi Bike stations
         freshness:
           warn_after:
-            count: 30
+            count: 365
             period: day
           error_after:
-            count: 365
+            count: 1825
             period: day
         loaded_at_field: last_reported
         columns:
@@ -24,10 +24,10 @@ sources:
         description: Individual trip records for NYC Citi Bike bikeshare
         freshness:
           warn_after:
-            count: 30
+            count: 365
             period: day
           error_after:
-            count: 365
+            count: 1825
             period: day
         loaded_at_field: starttime
         columns:

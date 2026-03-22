@@ -52,9 +52,10 @@ types = ["python"]
 [[repos.hooks]]
 id = "rumdl"
 name = "rumdl"
-entry = "uv run rumdl"
+entry = "uv run rumdl check"
 language = "system"
 types = ["markdown"]
+exclude = '\.claude/commands/'
 
 [[repos.hooks]]
 id = "sqlfmt"

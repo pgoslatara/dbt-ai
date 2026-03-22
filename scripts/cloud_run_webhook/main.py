@@ -34,14 +34,16 @@ def handle_pubsub(cloud_event: dict) -> str:
 
     # Trigger GitHub repository_dispatch
     url = f"https://api.github.com/repos/{github_repo}/dispatches"
-    payload = json.dumps({
-        "event_type": "cloud_run_failure",
-        "client_payload": {
-            "execution_name": execution_name,
-            "trigger_source": "cloud_monitoring_alert",
-            "alert_summary": incident.get("summary", "Cloud Run Job failure detected"),
-        },
-    }).encode("utf-8")
+    payload = json.dumps(
+        {
+            "event_type": "cloud_run_failure",
+            "client_payload": {
+                "execution_name": execution_name,
+                "trigger_source": "cloud_monitoring_alert",
+                "alert_summary": incident.get("summary", "Cloud Run Job failure detected"),
+            },
+        }
+    ).encode("utf-8")
 
     req = request.Request(  # noqa: S310
         url,

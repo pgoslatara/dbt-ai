@@ -4,12 +4,13 @@ import base64
 import json
 import logging
 import os
+from typing import Any
 from urllib import error, request
 
 logger = logging.getLogger(__name__)
 
 
-def handle_pubsub(cloud_event: dict) -> str:
+def handle_pubsub(cloud_event: Any) -> str:  # noqa: ANN401
     """Handle Pub/Sub message from Cloud Monitoring and trigger GitHub workflow."""
     github_repo = os.environ.get("GITHUB_REPO", "")
     github_token = os.environ.get("GITHUB_TOKEN", "")
@@ -19,8 +20,7 @@ def handle_pubsub(cloud_event: dict) -> str:
         return "Missing configuration"
 
     # Decode Pub/Sub message
-    event_data: dict = cloud_event
-    message_data = base64.b64decode(event_data["data"]["message"]["data"]).decode("utf-8")
+    message_data = base64.b64decode(cloud_event.data["message"]["data"]).decode("utf-8")
     alert_payload = json.loads(message_data)
 
     logger.info("Received alert: %s", alert_payload.get("incident", {}).get("summary", "unknown"))

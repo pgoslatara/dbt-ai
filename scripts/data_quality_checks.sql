@@ -13,16 +13,16 @@ from
         select
             city,
             metric_date,
-            total_trips,
-            avg(total_trips) over (
+            sum(total_trips) as total_trips,
+            avg(sum(total_trips)) over (
                 partition by city order by metric_date rows between 37 preceding and 8 preceding
             ) as avg_30d,
-            stddev(total_trips) over (
+            stddev(sum(total_trips)) over (
                 partition by city order by metric_date rows between 37 preceding and 8 preceding
             ) as stddev_30d
         from `{project_id}.dbt_ai_prod.fct_daily_station_metrics`
         where metric_date >= date_sub(current_date(), interval 45 day)
-        group by city, metric_date, total_trips
+        group by city, metric_date
     )
 where
     metric_date >= date_sub(current_date(), interval 7 day) and abs((total_trips - avg_30d) / nullif(stddev_30d, 0)) > 2

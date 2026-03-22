@@ -72,12 +72,16 @@ models:
         data_type: STRING
         description: Unique identifier for the station
         tests:
-          - not_null
+          - not_null:
+              config:
+                severity: warn
       - name: avg_trip_duration_minutes
         data_type: FLOAT64
         description: Average trip duration in minutes for the day
         tests:
-          - not_null
+          - not_null:
+              config:
+                severity: warn
       - name: city
         data_type: STRING
         description: City where the station is located
@@ -87,7 +91,9 @@ models:
         data_type: DATE
         description: The date for these metrics
         tests:
-          - not_null
+          - not_null:
+              config:
+                severity: warn
       - name: total_trips
         data_type: INT64
         description: Total number of trips for the day

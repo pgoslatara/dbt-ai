@@ -6,7 +6,7 @@ dbt_ai:
       dataset: "{{ env_var('DBT_DATASET', 'ci') }}"
       job_execution_timeout_seconds: 300
       job_retries: 1
-      location: EU
+      location: US
       method: oauth
       priority: interactive
       project: "{{ env_var('GCP_PROJECT', 'dbt-ai-demo') }}"
@@ -17,7 +17,7 @@ dbt_ai:
       dataset: dbt_ai_dev
       job_execution_timeout_seconds: 300
       job_retries: 1
-      location: EU
+      location: US
       method: oauth
       priority: interactive
       project: "{{ env_var('GCP_PROJECT', 'dbt-ai-demo') }}"
@@ -28,7 +28,7 @@ dbt_ai:
       dataset: dbt_ai_prod
       job_execution_timeout_seconds: 300
       job_retries: 1
-      location: EU
+      location: US
       method: oauth
       priority: interactive
       project: "{{ env_var('GCP_PROJECT', 'dbt-ai-demo') }}"

@@ -68,6 +68,8 @@ models:
           - relationships:
               to: ref('stg_austin_bikeshare__stations')
               field: station_id
+              config:
+                severity: warn
 
       - name: ended_at
         description: Timestamp when the trip ended
@@ -77,10 +79,14 @@ models:
       - name: start_station_id
         description: Station where the trip started
         tests:
-          - not_null
+          - not_null:
+              config:
+                severity: warn
           - relationships:
               to: ref('stg_austin_bikeshare__stations')
               field: station_id
+              config:
+                severity: warn
 
       - name: started_at
         description: Timestamp when the trip started

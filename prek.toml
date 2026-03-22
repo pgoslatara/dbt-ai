@@ -1,67 +1,79 @@
-[tool.prek]
+[[repos]]
+repo = "https://github.com/pre-commit/pre-commit-hooks"
+rev = "v5.0.0"
 
-[[tool.prek.hooks]]
+[[repos.hooks]]
 id = "check-added-large-files"
 args = ["--maxkb=1024"]
 
-[[tool.prek.hooks]]
+[[repos.hooks]]
 id = "check-merge-conflict"
 
-[[tool.prek.hooks]]
+[[repos.hooks]]
 id = "check-toml"
 
-[[tool.prek.hooks]]
+[[repos.hooks]]
 id = "check-yaml"
 
-[[tool.prek.hooks]]
+[[repos.hooks]]
 id = "detect-private-key"
 
-[[tool.prek.hooks]]
+[[repos.hooks]]
 id = "end-of-file-fixer"
 
-[[tool.prek.hooks]]
+[[repos.hooks]]
 id = "trailing-whitespace"
 
-[[tool.prek.hooks]]
+[[repos]]
+repo = "local"
+
+[[repos.hooks]]
 id = "dbt-bouncer"
+name = "dbt-bouncer"
 entry = "uv run dbt-bouncer --only manifest_checks"
 language = "system"
 pass_filenames = false
 types = ["yaml", "sql"]
 
-[[tool.prek.hooks]]
+[[repos.hooks]]
 id = "ruff-check"
+name = "ruff-check"
 entry = "uv run ruff check --fix"
 language = "system"
 types = ["python"]
 
-[[tool.prek.hooks]]
+[[repos.hooks]]
 id = "ruff-format"
+name = "ruff-format"
 entry = "uv run ruff format"
 language = "system"
 types = ["python"]
 
-[[tool.prek.hooks]]
+[[repos.hooks]]
 id = "rumdl"
+name = "rumdl"
 entry = "uv run rumdl"
 language = "system"
 types = ["markdown"]
 
-[[tool.prek.hooks]]
+[[repos.hooks]]
 id = "sqlfmt"
+name = "sqlfmt"
 entry = "uv run sqlfmt"
 language = "system"
 types = ["sql"]
 
-[[tool.prek.hooks]]
+[[repos.hooks]]
 id = "ty"
+name = "ty"
 entry = "uv run ty check"
 language = "system"
 pass_filenames = false
 types = ["python"]
 
-[[tool.prek.hooks]]
+[[repos.hooks]]
 id = "yamlfix"
+name = "yamlfix"
 entry = "uv run yamlfix"
 language = "system"
 types = ["yaml"]

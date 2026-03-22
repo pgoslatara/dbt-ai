@@ -19,7 +19,8 @@ def handle_pubsub(cloud_event: dict) -> str:
         return "Missing configuration"
 
     # Decode Pub/Sub message
-    message_data = base64.b64decode(cloud_event.data["message"]["data"]).decode("utf-8")
+    event_data: dict = cloud_event
+    message_data = base64.b64decode(event_data["data"]["message"]["data"]).decode("utf-8")
     alert_payload = json.loads(message_data)
 
     logger.info("Received alert: %s", alert_payload.get("incident", {}).get("summary", "unknown"))

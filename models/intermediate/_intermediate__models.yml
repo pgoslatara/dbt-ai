@@ -44,15 +44,11 @@ models:
       - name: station_id
         description: Unique identifier for the station
         tests:
-          - not_null:
-              config:
-                severity: warn
+          - not_null
       - name: avg_trip_duration_minutes
         description: Average trip duration in minutes for trips starting at this station
         tests:
-          - not_null:
-              config:
-                severity: warn
+          - not_null
       - name: city
         description: City where the station is located
         tests:

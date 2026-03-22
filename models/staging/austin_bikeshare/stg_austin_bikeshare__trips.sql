@@ -1,21 +1,19 @@
-WITH
+with
 
-source AS (
-    SELECT *
-    FROM {{ source('austin_bikeshare', 'bikeshare_trips') }}
-),
+    source as (select * from {{ source("austin_bikeshare", "bikeshare_trips") }}),
 
-renamed AS (
-    SELECT
-        CAST(trip_id AS STRING) AS trip_id,
-        'austin' AS city,
-        CAST(duration_minutes AS FLOAT64) AS duration_minutes,
-        CAST(end_station_id AS STRING) AS end_station_id,
-        TIMESTAMP_ADD(CAST(start_time AS TIMESTAMP), INTERVAL CAST(duration_minutes AS INT64) MINUTE) AS ended_at,
-        CAST(start_station_id AS STRING) AS start_station_id,
-        CAST(start_time AS TIMESTAMP) AS started_at,
-        subscriber_type
-    FROM source
-)
+    renamed as (
+        select
+            cast(trip_id as string) as trip_id,
+            'austin' as city,
+            cast(duration_minutes as float64) as duration_minutes,
+            cast(end_station_id as string) as end_station_id,
+            timestamp_add(cast(start_time as timestamp), interval cast(duration_minutes as int64) minute) as ended_at,
+            cast(start_station_id as string) as start_station_id,
+            cast(start_time as timestamp) as started_at,
+            subscriber_type
+        from source
+    )
 
-SELECT * FROM renamed
+select *
+from renamed

@@ -13,7 +13,7 @@ sources:
             count: 365
             period: day
           error_after:
-            count: 1825
+            count: 3650
             period: day
         loaded_at_field: modified_date
         columns:
@@ -27,7 +27,7 @@ sources:
             count: 365
             period: day
           error_after:
-            count: 1095
+            count: 3650
             period: day
         loaded_at_field: start_time
         columns:

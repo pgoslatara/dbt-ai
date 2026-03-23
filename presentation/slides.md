@@ -1,30 +1,107 @@
 ---
 marp: true
-theme: gaia
+theme: default
 paginate: true
-backgroundColor: #1a1a2e
-color: #e0e0e0
 style: |
+  /* ── Xebia brand palette ── */
+  :root {
+    --xebia-plum: #6B2D5B;
+    --xebia-teal: #2CBCB3;
+    --xebia-green: #2E8B57;
+    --xebia-gray: #555555;
+    --xebia-light-gray: #f5f5f5;
+  }
+
+  /* ── Default (light) slides ── */
   section {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Nunito Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #ffffff;
+    color: var(--xebia-gray);
   }
-  h1, h2, h3 {
-    color: #ff6b35;
+  h1 {
+    color: var(--xebia-plum);
+    font-weight: 800;
+    font-size: 1.8em;
   }
-  code {
-    background-color: #16213e;
-    color: #e0e0e0;
+  h2 {
+    color: var(--xebia-plum);
+    font-weight: 700;
+    font-size: 1.4em;
+  }
+  h3 {
+    color: var(--xebia-plum);
+    font-weight: 600;
+  }
+  strong {
+    color: #333333;
   }
   a {
-    color: #4ecdc4;
+    color: var(--xebia-teal);
+  }
+  code {
+    background-color: #f0f0f0;
+    color: var(--xebia-green);
+    font-size: 0.9em;
+  }
+  pre code {
+    background-color: #1e1e2e;
+    color: #e0e0e0;
+  }
+  pre {
+    background-color: #1e1e2e;
+    border-radius: 8px;
+    border-left: 4px solid var(--xebia-plum);
   }
   table {
     font-size: 0.8em;
   }
   th {
-    background-color: #ff6b35;
-    color: #1a1a2e;
+    background-color: var(--xebia-plum);
+    color: #ffffff;
   }
+  li::marker {
+    color: var(--xebia-plum);
+  }
+  blockquote {
+    border-left: 4px solid var(--xebia-teal);
+    color: var(--xebia-gray);
+    background-color: var(--xebia-light-gray);
+    padding: 0.5em 1em;
+  }
+  footer {
+    color: #999999;
+    font-size: 0.6em;
+  }
+  section::after {
+    color: #999999;
+    font-size: 0.7em;
+  }
+
+  /* ── Dark (plum) slides ── */
+  section.lead {
+    background-color: var(--xebia-plum);
+    color: #ffffff;
+  }
+  section.lead h1,
+  section.lead h2,
+  section.lead h3 {
+    color: #ffffff;
+  }
+  section.lead strong {
+    color: #ffffff;
+  }
+  section.lead a {
+    color: var(--xebia-teal);
+  }
+  section.lead code {
+    background-color: rgba(255,255,255,0.15);
+    color: #ffffff;
+  }
+  section.lead::after {
+    color: rgba(255,255,255,0.5);
+  }
+
+  /* ── Columns helper ── */
   .columns {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -41,7 +118,7 @@ style: |
 
 **Amsterdam dbt Meetup** — 26 March 2026
 
-Philip Oslatara
+Padraic Slattery
 
 <!-- Speaker notes: Welcome everyone. Today I'll show you how AI can become a genuine teammate in your dbt workflow — not just a chatbot, but an active participant in code review, testing, and maintenance. -->
 
@@ -49,7 +126,7 @@ Philip Oslatara
 
 # About Me
 
-- **Philip Oslatara** — Data Engineering Consultant
+- **Padraic Slattery** — Analytics Engineer @ Xebia Data
 - Building data platforms with dbt, BigQuery, and friends
 - Passionate about developer experience and automation
 - GitHub: [@pgoslatara](https://github.com/pgoslatara)
@@ -72,6 +149,8 @@ Philip Oslatara
 <!-- Speaker notes: Here's what we'll cover in the next 20 minutes. The live demo is about 6 minutes — I'll generate a model, open a PR, and show the AI in action. ~30 seconds -->
 
 ---
+
+<!-- _class: lead -->
 
 # The Problem: dbt at Scale
 
@@ -198,6 +277,7 @@ Every PR gets reviewed by Claude as a **senior dbt engineer**:
 - Missing tests and documentation
 - Performance concerns (full scans, wrong materializations)
 - Business logic correctness
+- **Always posts a summary comment** — visible trace on every PR
 
 ```yaml
 # .github/workflows/claude_pr_review.yml
@@ -207,9 +287,13 @@ with:
     Review this PR as a senior dbt/analytics engineer...
 ```
 
-<!-- Speaker notes: This runs on every PR via GitHub Actions. It's not a replacement for human review — it's a first pass that catches the mechanical stuff so your human reviewers can focus on design and logic. ~1.5 minutes -->
+A fallback step posts "No issues found" if Claude has no feedback — so you always know the review ran.
+
+<!-- Speaker notes: This runs on every PR via GitHub Actions. It's not a replacement for human review — it's a first pass that catches the mechanical stuff so your human reviewers can focus on design and logic. A fallback step ensures every review leaves a visible comment, even when nothing is flagged. ~1.5 minutes -->
 
 ---
+
+<!-- _class: lead -->
 
 # Agentic Workflows
 
@@ -314,7 +398,6 @@ Cloud Run fails → Cloud Monitoring alert
 
 <!-- _class: lead -->
 <!-- _paginate: false -->
-<!-- _backgroundColor: #0f0f23 -->
 
 # Live Demo
 
@@ -363,11 +446,15 @@ Staging (source-specific) -> Intermediate (unified) -> Marts (business metrics)
 
 **PR opened -> Claude comments within minutes:**
 
-- "Column `station_id` should have a `not_null` test"
-- "Consider `incremental` materialization for this large fact table"
-- "Missing description for `is_weekend` column"
+- "`GROUP BY total_trips` treats the metric as a grouping key — use `SUM()` instead"
+- "Global `tests: +severity: warn` suppresses all test failures — scope to staging"
+- "`cloud_event["data"]` raises TypeError — use `.data` attribute access"
 
-<!-- Speaker notes: BACKUP SLIDE. Show a real PR with Claude's review comments. Point out the quality and specificity of the feedback. ~1.5 minutes -->
+**No issues?** Claude still posts:
+
+> **Claude Code Review** — No issues found. Reviewed for SQL style, naming conventions, tests, documentation, performance, business logic, and materializations.
+
+<!-- Speaker notes: BACKUP SLIDE. Show a real PR with Claude's review comments. These are actual issues caught on our PR. Point out how it found a real SQL bug (wrong GROUP BY), a config issue (global severity), and a runtime error (CloudEvent access). Even when nothing is found, a comment is always posted. ~1.5 minutes -->
 
 ---
 
@@ -402,8 +489,10 @@ Staging (source-specific) -> Intermediate (unified) -> Marts (business metrics)
 - Token costs add up with large diffs
 - Keep CLAUDE.md updated as conventions evolve
 - Unit test mock data needs to match your column types exactly
+- Public data quality issues cascade through all layers — scope `severity: warn` accordingly
+- Formatter vs convention conflicts (e.g. sqlfmt lowercase vs CLAUDE.md uppercase) — pick one source of truth
 
-<!-- Speaker notes: Be honest about limitations. AI is a teammate, not a replacement. The cost is real but worth it for the time saved. ~1.5 minutes -->
+<!-- Speaker notes: Be honest about limitations. AI is a teammate, not a replacement. The cost is real but worth it for the time saved. We learned the hard way that null values in public datasets cascade from staging through marts, so you need to set test severity globally rather than per-layer. Also, automated formatters like sqlfmt can conflict with your stated conventions — make sure CLAUDE.md reflects your actual enforced style. ~2 minutes -->
 
 ---
 
@@ -426,7 +515,7 @@ Staging (source-specific) -> Intermediate (unified) -> Marts (business metrics)
 
 # Questions?
 
-**Philip Oslatara**
+**Padraic Slattery** — Analytics Engineer @ Xebia Data
 
 GitHub: [@pgoslatara](https://github.com/pgoslatara)
 

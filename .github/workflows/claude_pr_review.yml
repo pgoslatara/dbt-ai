@@ -34,7 +34,16 @@ jobs:
             5. **Performance**: Flag full table scans, missing incremental strategies on large tables, unnecessary `SELECT *`.
             6. **Business Logic**: Verify computed columns (`is_round_trip`, `trip_duration_minutes`, `day_of_week`) are correct.
             7. **Materializations**: Staging/intermediate should be views, marts should be tables or incremental.
-            Be concise. Only leave inline comments on issues, not on things that are correct.
-            IMPORTANT: Always post a summary comment on the PR using the GitHub API, even if no issues are found. Use this format:
-            - If issues found: "## Claude Code Review\n\nFound N issue(s):\n\n" followed by a numbered list of issues.
-            - If no issues found: "## Claude Code Review\n\nNo issues found. Reviewed for SQL style, naming conventions, tests, documentation, performance, business logic, and materializations."
+            Be concise. Only comment on issues, not on things that are correct.
+      - name: Post review summary
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |-
+          EXISTING=$(gh api "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" --jq '[.[] | select(.body | contains("Claude Code Review"))] | length')
+          if [ "$EXISTING" = "0" ]; then
+            BODY="## Claude Code Review"
+            BODY="${BODY}\n\nNo issues found. Reviewed for SQL style, naming conventions, tests, documentation, performance, business logic, and materializations."
+            printf '%b' "$BODY" | gh pr comment "$PR_NUMBER" --body-file -
+          fi

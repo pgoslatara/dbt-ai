@@ -25,7 +25,7 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          allowed_tools: "Bash(gh pr comment*)"
+          claude_args: "--allowedTools 'Bash(gh pr comment*)'"
           prompt: |-
             Analyze the diff for this PR and post a PR comment using `gh pr comment` with a business-friendly summary.
             You MUST post the comment using: gh pr comment ${{ github.event.pull_request.number }} --body "..."

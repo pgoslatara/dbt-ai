@@ -1,8 +1,11 @@
+---
 name: Claude PR Review
 
 on:
   pull_request:
-    types: [opened, synchronize]
+    types:
+      - opened
+      - synchronize
 
 jobs:
   review:
@@ -12,21 +15,18 @@ jobs:
       contents: read
       id-token: write
       pull-requests: write
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
       - name: Run Claude PR Review
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          prompt: |
+          prompt: |-
             Review this PR as a senior dbt/analytics engineer. Focus on:
-
             1. **SQL Style**: Uppercase keywords, snake_case names, one column per line, table aliases in joins, CTEs over subqueries.
             2. **Naming Conventions**: staging=`stg_`, intermediate=`int_`, dimensions=`dim_`, facts=`fct_`.
             3. **Missing Tests**: Every model needs at least one test. Check for `not_null`, `unique` on keys, `accepted_values`, `relationships`.
@@ -34,5 +34,4 @@ jobs:
             5. **Performance**: Flag full table scans, missing incremental strategies on large tables, unnecessary `SELECT *`.
             6. **Business Logic**: Verify computed columns (`is_round_trip`, `trip_duration_minutes`, `day_of_week`) are correct.
             7. **Materializations**: Staging/intermediate should be views, marts should be tables or incremental.
-
             Be concise. Only comment on issues, not on things that are correct.

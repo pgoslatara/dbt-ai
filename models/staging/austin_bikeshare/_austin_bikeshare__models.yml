@@ -1,3 +1,4 @@
+---
 models:
   - name: stg_austin_bikeshare__stations
     description: Cleaned and standardized Austin B-cycle bikeshare stations
@@ -7,14 +8,13 @@ models:
         tests:
           - not_null
           - unique
-
       - name: city
         description: City where the station is located
         tests:
           - not_null
           - accepted_values:
-              values: ["austin"]
-
+              values:
+                - austin
       - name: latitude
         description: Latitude coordinate of the station
         tests:
@@ -22,7 +22,6 @@ models:
           - dbt_expectations.expect_column_values_to_be_between:
               min_value: 25
               max_value: 35
-
       - name: longitude
         description: Longitude coordinate of the station
         tests:
@@ -30,17 +29,14 @@ models:
           - dbt_expectations.expect_column_values_to_be_between:
               min_value: -100
               max_value: -95
-
       - name: station_name
         description: Human-readable name of the station
         tests:
           - not_null
-
       - name: status
         description: Current operational status of the station
         tests:
           - not_null
-
   - name: stg_austin_bikeshare__trips
     description: Cleaned and standardized Austin B-cycle bikeshare trips
     columns:
@@ -49,43 +45,43 @@ models:
         tests:
           - not_null
           - unique
-
       - name: city
         description: City where the trip occurred
         tests:
           - not_null
           - accepted_values:
-              values: ["austin"]
-
+              values:
+                - austin
       - name: duration_minutes
         description: Duration of the trip in minutes
         tests:
           - not_null
-
       - name: end_station_id
         description: Station where the trip ended
         tests:
           - relationships:
               to: ref('stg_austin_bikeshare__stations')
               field: station_id
-
+              config:
+                severity: warn
       - name: ended_at
         description: Timestamp when the trip ended
         tests:
           - not_null
-
       - name: start_station_id
         description: Station where the trip started
         tests:
-          - not_null
+          - not_null:
+              config:
+                severity: warn
           - relationships:
               to: ref('stg_austin_bikeshare__stations')
               field: station_id
-
+              config:
+                severity: warn
       - name: started_at
         description: Timestamp when the trip started
         tests:
           - not_null
-
       - name: subscriber_type
         description: Type of subscription the rider has

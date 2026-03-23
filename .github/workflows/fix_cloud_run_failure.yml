@@ -1,8 +1,10 @@
+---
 name: Fix Cloud Run Failure
 
 on:
   repository_dispatch:
-    types: [cloud_run_failure]
+    types:
+      - cloud_run_failure
   workflow_dispatch:
     inputs:
       execution_name:
@@ -25,27 +27,22 @@ jobs:
       contents: write
       id-token: write
       pull-requests: write
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
       - name: Authenticate to GCP
         uses: google-github-actions/auth@v2
         with:
           service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
           workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-
       - name: Setup gcloud
         uses: google-github-actions/setup-gcloud@v2
-
       - name: Resolve execution name
         id: resolve
         run: |
           EXEC_NAME="${{ github.event.inputs.execution_name || github.event.client_payload.execution_name || '' }}"
-
           if [ -z "$EXEC_NAME" ]; then
             echo "No execution name provided, finding latest failed execution..."
             EXEC_NAME=$(gcloud run jobs executions list \
@@ -57,15 +54,12 @@ jobs:
               --format="value(metadata.name)" \
               2>/dev/null) || true
           fi
-
           if [ -z "$EXEC_NAME" ]; then
             echo "No failed execution found."
             exit 0
           fi
-
           echo "execution_name=$EXEC_NAME" >> "$GITHUB_OUTPUT"
           echo "Found failed execution: $EXEC_NAME"
-
       - name: Pull Cloud Run logs
         if: steps.resolve.outputs.execution_name
         id: logs
@@ -84,7 +78,6 @@ jobs:
             --format="table(timestamp,textPayload)" \
             --project="${{ env.GCP_PROJECT }}" \
             > /tmp/execution_logs.txt 2>&1 || true
-
           {
             echo "=== Execution Details ==="
             cat /tmp/execution_details.txt
@@ -99,23 +92,18 @@ jobs:
             head -500 /tmp/full_context.txt
             echo "LOGS_EOF"
           } >> "$GITHUB_ENV"
-
       - name: Create fix with Claude
         if: steps.resolve.outputs.execution_name
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          claude_args: "--allowedTools bash computer edit write"
+          claude_args: --allowedTools bash computer edit write
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          prompt: |
+          prompt: |-
             A Cloud Run Job execution of our dbt project has failed.
-
             Execution: ${{ steps.resolve.outputs.execution_name }}
-
             Here are the execution details and logs:
-
             ${{ env.CLOUD_RUN_LOGS }}
-
             Your task:
             1. Analyze the error logs to identify the root cause
             2. Determine which dbt model(s) or configuration caused the failure
@@ -126,7 +114,6 @@ jobs:
                - Summary of the failure and root cause
                - What was changed and why
                - How to verify the fix
-
             Focus on the most likely cause: SQL errors, schema changes, source
             freshness issues, or configuration problems. If you cannot determine
             a code fix (e.g., infrastructure issue), create an issue instead of a PR.

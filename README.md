@@ -41,7 +41,13 @@ Purpose-built AI skills from the [dbt-agent-skills](https://github.com/dbt-labs/
 |---------|-------------|
 | `/add-tests <model>` | Add comprehensive tests to a model |
 | `/document-model <model>` | Add documentation to a model |
+| `/explain-model <model>` | Explain a model's purpose, lineage, and data quality |
+| `/generate-exposure <description>` | Generate an exposure from a plain-English description |
 | `/generate-staging-model <source.table>` | Generate a staging model from a source |
+| `/generate-unit-tests <model>` | Generate dbt unit tests for computed columns |
+| `/impact-analysis <model>` | Analyze downstream impact of changing a model |
+| `/review-sql` | Review SQL for BigQuery performance anti-patterns |
+| `/suggest-tests <model>` | Suggest missing tests for a model |
 
 ### Claude PR Review
 
@@ -55,6 +61,18 @@ PRs automatically receive AI-generated descriptions that summarize changes in bu
 
 - **Abandoned Models Detection**: Compares the dbt manifest against BigQuery datasets to find orphaned tables, generates cleanup SQL, and creates a GitHub issue.
 - **Codebase Review**: AI analyzes the entire codebase for dbt best practice violations and creates a categorized GitHub issue with findings.
+
+### Unit Tests
+
+dbt unit tests (v1.8+) validate computed column logic with mock data — no database required. The project includes unit tests for `fct_trips` (round trip detection, weekend flagging, day extraction) and `fct_daily_station_metrics` (aggregation logic).
+
+### Exposures
+
+Downstream consumers are documented as dbt exposures, making them visible in the DAG and enabling impact analysis. Claude can generate new exposures from plain-English descriptions via `/generate-exposure`.
+
+### Data Quality Monitoring
+
+A weekly GitHub Actions workflow queries production BigQuery data for statistical anomalies (trip volume spikes, duration outliers, data freshness issues) and creates a GitHub issue with AI-analyzed findings.
 
 ## Getting Started
 
@@ -115,6 +133,7 @@ make docs       # Generate and serve dbt docs
 | Codebase Review | Weekly (Monday) | AI best-practice audit |
 | Fix CI Failure | CI Pipeline failure | Analyze failure logs and comment fix suggestions on PR |
 | Fix Cloud Run Failure | Cloud Run Job failure / `repository_dispatch` | Analyze logs, create fix PR |
+| Data Quality Check | Weekly (Monday) | Detect data anomalies and create issue |
 
 ## Data Sources
 

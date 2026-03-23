@@ -1,0 +1,40 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if echo \"$CLAUDE_FILE_PATHS\" | grep -q '\\.sql$'; then uv run sqlfmt --check $CLAUDE_FILE_PATHS 2>/dev/null || echo 'sqlfmt: SQL formatting issues detected — consider running make format'; fi"
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(/usr/bin/git show:*)",
+      "Bash(/usr/bin/find . -maxdepth 1 -type f)",
+      "Bash(/usr/bin/find . -maxdepth 1 -type d)",
+      "Bash(/usr/bin/git status:*)",
+      "Bash(python3 -c \"import urllib.request,json; r=urllib.request.urlopen\\(''''https://pypi.org/pypi/dbt-bigquery/json''''\\); d=json.loads\\(r.read\\(\\)\\); print\\(d[''''info''''][''''version'''']\\)\")",
+      "Bash(python3:*)",
+      "Bash(/home/pslattery/repos/dbt-ai/scripts/setup_gcp.sh 2>&1)",
+      "Bash(gcloud config:*)",
+      "Bash(gcloud services:*)",
+      "Bash(gcloud artifacts:*)",
+      "Bash(gcloud iam:*)",
+      "Bash(SA_EMAIL=\"github-actions@dbt-ai-demo.iam.gserviceaccount.com\" for ROLE in \"roles/artifactregistry.writer\" \"roles/bigquery.dataEditor\" \"roles/bigquery.jobUser\" \"roles/run.admin\")",
+      "Bash(do gcloud:*)",
+      "Bash(gcloud run:*)",
+      "Bash(gcloud pubsub:*)",
+      "Bash(gcloud alpha:*)",
+      "Bash(gcloud logging:*)",
+      "Bash(gcloud projects:*)",
+      "Bash(gcloud secrets:*)",
+      "Bash(gcloud functions:*)",
+      "Bash(claude config:*)"
+    ]
+  }
+}

@@ -1,8 +1,9 @@
+---
 name: Daily Pipeline
 
 on:
   schedule:
-    - cron: "0 6 * * *"
+    - cron: 0 6 * * *
   workflow_dispatch:
 
 env:
@@ -16,17 +17,14 @@ jobs:
     permissions:
       contents: read
       id-token: write
-
     steps:
       - name: Authenticate to GCP
         uses: google-github-actions/auth@v2
         with:
           service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
           workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-
       - name: Setup gcloud
         uses: google-github-actions/setup-gcloud@v2
-
       - name: Execute Cloud Run Job
         id: execute
         run: |
@@ -51,17 +49,15 @@ jobs:
             --format="value(status.conditions[0].type)" \
             2>/dev/null) || STATUS="Failed"
           echo "status=$STATUS" >> "$GITHUB_OUTPUT"
-
           if [ "$STATUS" != "Completed" ]; then
             echo "Cloud Run Job execution failed: $STATUS"
             exit 1
           fi
-
       - name: Trigger fix workflow on failure
         if: failure()
         env:
           GH_TOKEN: ${{ secrets.PAT_GITHUB }}
-        run: |
+        run: |-
           gh workflow run fix_cloud_run_failure.yml \
             --repo "${{ github.repository }}" \
             -f execution_name="${{ steps.execute.outputs.execution_name }}" \

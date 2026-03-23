@@ -16,7 +16,7 @@ def get_manifest_models(manifest_path: Path) -> set[str]:
         manifest = json.load(f)
 
     models = set()
-    for node_id, node in manifest.get("nodes", {}).items():
+    for node in manifest.get("nodes", {}).values():
         if node["resource_type"] == "model":
             schema = node.get("schema", "")
             name = node.get("name", "")
@@ -28,8 +28,8 @@ def get_manifest_models(manifest_path: Path) -> set[str]:
 def get_bigquery_tables(project_id: str, dataset: str) -> set[str]:
     """List tables in a BigQuery dataset using bq CLI."""
     try:
-        result = subprocess.run(
-            ["bq", "ls", "--format=json", f"{project_id}:{dataset}"],
+        result = subprocess.run(  # noqa: S603
+            ["bq", "ls", "--format=json", f"{project_id}:{dataset}"],  # noqa: S607
             capture_output=True,
             check=True,
             text=True,
@@ -49,7 +49,7 @@ def main() -> None:
         sys.exit(1)
 
     project_id = subprocess.run(
-        ["gcloud", "config", "get-value", "project"],
+        ["gcloud", "config", "get-value", "project"],  # noqa: S607
         capture_output=True,
         check=True,
         text=True,

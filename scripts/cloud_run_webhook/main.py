@@ -4,12 +4,13 @@ import base64
 import json
 import logging
 import os
+from typing import Any
 from urllib import error, request
 
 logger = logging.getLogger(__name__)
 
 
-def handle_pubsub(cloud_event: dict) -> str:
+def handle_pubsub(cloud_event: Any) -> str:  # noqa: ANN401
     """Handle Pub/Sub message from Cloud Monitoring and trigger GitHub workflow."""
     github_repo = os.environ.get("GITHUB_REPO", "")
     github_token = os.environ.get("GITHUB_TOKEN", "")
@@ -33,16 +34,18 @@ def handle_pubsub(cloud_event: dict) -> str:
 
     # Trigger GitHub repository_dispatch
     url = f"https://api.github.com/repos/{github_repo}/dispatches"
-    payload = json.dumps({
-        "event_type": "cloud_run_failure",
-        "client_payload": {
-            "execution_name": execution_name,
-            "trigger_source": "cloud_monitoring_alert",
-            "alert_summary": incident.get("summary", "Cloud Run Job failure detected"),
-        },
-    }).encode("utf-8")
+    payload = json.dumps(
+        {
+            "event_type": "cloud_run_failure",
+            "client_payload": {
+                "execution_name": execution_name,
+                "trigger_source": "cloud_monitoring_alert",
+                "alert_summary": incident.get("summary", "Cloud Run Job failure detected"),
+            },
+        }
+    ).encode("utf-8")
 
-    req = request.Request(
+    req = request.Request(  # noqa: S310
         url,
         data=payload,
         headers={
@@ -55,13 +58,13 @@ def handle_pubsub(cloud_event: dict) -> str:
     )
 
     try:
-        with request.urlopen(req) as response:
+        with request.urlopen(req) as response:  # noqa: S310
             logger.info("GitHub dispatch triggered: %s", response.status)
     except error.HTTPError as e:
-        logger.error("GitHub API error: %s %s", e.code, e.read().decode("utf-8"))
+        logger.exception("GitHub API error: %s %s", e.code, e.read().decode("utf-8"))
         return f"GitHub API error: {e.code}"
     except error.URLError as e:
-        logger.error("Network error: %s", e.reason)
+        logger.exception("Network error: %s", e.reason)
         return f"Network error: {e.reason}"
 
     return "OK"

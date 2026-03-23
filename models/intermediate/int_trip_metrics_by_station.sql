@@ -1,17 +1,16 @@
-WITH
+with
 
-trips AS (
-    SELECT * FROM {{ ref('int_trips_unioned') }}
-),
+    trips as (select * from {{ ref("int_trips_unioned") }}),
 
-metrics AS (
-    SELECT
-        start_station_id AS station_id,
-        city,
-        COUNT(*) AS total_trips,
-        ROUND(AVG(duration_minutes), 2) AS avg_trip_duration_minutes
-    FROM trips
-    GROUP BY start_station_id, city
-)
+    metrics as (
+        select
+            start_station_id as station_id,
+            city,
+            count(*) as total_trips,
+            round(avg(duration_minutes), 2) as avg_trip_duration_minutes
+        from trips
+        group by start_station_id, city
+    )
 
-SELECT * FROM metrics
+select *
+from metrics

@@ -1,0 +1,78 @@
+---
+name: Weekly Data Quality Check
+
+on:
+  schedule:
+    - cron: 0 7 * * 1
+  workflow_dispatch:
+
+env:
+  GCP_PROJECT: ${{ secrets.GCP_PROJECT_ID }}
+
+jobs:
+  check:
+    name: Data Quality Anomaly Detection
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      issues: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+      - name: Run data quality checks
+        id: quality
+        run: |
+          # Substitute project ID into SQL
+          sed "s/{project_id}/$GCP_PROJECT/g" scripts/data_quality_checks.sql > /tmp/checks.sql
+
+          # Run each query (separated by semicolons) and collect results
+          RESULTS=""
+          while IFS= read -r query; do
+            if [ -n "$query" ]; then
+              RESULT=$(bq query --use_legacy_sql=false --format=json "$query" 2>/dev/null || echo "[]")
+              if [ "$RESULT" != "[]" ] && [ -n "$RESULT" ]; then
+                RESULTS="${RESULTS}${RESULT}\n"
+              fi
+            fi
+          done < <(grep -v '^--' /tmp/checks.sql | tr '\n' ' ' | sed 's/;/;\n/g')
+          echo "results<<EOF" >> "$GITHUB_OUTPUT"
+          echo -e "$RESULTS" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+          # Set flag if any anomalies found
+          if [ -n "$RESULTS" ]; then
+            echo "has_anomalies=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_anomalies=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Analyze with Claude
+        if: steps.quality.outputs.has_anomalies == 'true'
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prompt: |-
+            Analyze these data quality check results from our bikeshare analytics pipeline.
+            Query results:
+            ${{ steps.quality.outputs.results }}
+            For each anomaly found:
+            1. Classify severity: Alert (>3 std deviations or data missing), Warning (>2 std deviations), Info (notable but not critical)
+            2. Explain what the anomaly means in plain English
+            3. Suggest possible causes (data source issues, seasonal patterns, pipeline bugs)
+            4. Recommend actions if needed
+            Create a GitHub issue with your analysis:
+            gh issue create \
+              --title "Weekly: Data quality anomalies detected ($(date +%Y-%m-%d))" \
+              --label "automated,data-quality" \
+              --body "$(your markdown report with:
+              - Summary of findings
+              - Categorized anomalies (Alert, Warning, Info)
+              - Recommended actions)"

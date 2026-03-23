@@ -1,9 +1,12 @@
+---
 name: Fix CI Failure
 
 on:
   workflow_run:
-    workflows: ["CI Pipeline"]
-    types: [completed]
+    workflows:
+      - CI Pipeline
+    types:
+      - completed
 
 jobs:
   analyze:
@@ -15,13 +18,11 @@ jobs:
       contents: read
       id-token: write
       pull-requests: write
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
-
       - name: Get PR number
         id: pr
         env:
@@ -31,15 +32,12 @@ jobs:
           PR_NUMBER=$(gh api \
             "repos/${{ github.repository }}/commits/${HEAD_SHA}/pulls" \
             --jq '.[0].number // empty')
-
           if [ -z "$PR_NUMBER" ]; then
             echo "No PR found for this commit."
             exit 0
           fi
-
           echo "number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
           echo "Found PR #$PR_NUMBER"
-
       - name: Fetch failed logs
         if: steps.pr.outputs.number
         env:
@@ -56,7 +54,6 @@ jobs:
             tail -300 /tmp/ci_failed_logs.txt
             echo "LOGS_EOF"
           } >> "$GITHUB_ENV"
-
       - name: Analyze and comment with Claude
         if: steps.pr.outputs.number
         uses: anthropics/claude-code-action@v1
@@ -66,23 +63,17 @@ jobs:
           RUN_ID: ${{ github.event.workflow_run.id }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          claude_args: "--allowedTools bash computer edit write"
+          claude_args: --allowedTools bash computer edit write
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          prompt: |
-            The CI pipeline failed on PR #${{ steps.pr.outputs.number }} in this dbt project.
-
+          prompt: |-
+            The CI pipeline failed on PR  #${{ steps.pr.outputs.number }} in this dbt project.
             Failed CI logs (last 300 lines):
-
             ${{ env.CI_FAILED_LOGS }}
-
-            Analyze the failure and post a comment on PR #${{ steps.pr.outputs.number }} with:
-
+            Analyze the failure and post a comment on PR  #${{ steps.pr.outputs.number }} with:
             1. **Root cause**: What failed and why (be specific — name the step, model, or test)
             2. **Suggested fix**: Concrete code changes to resolve the issue
             3. **Commands to verify**: What the developer should run locally to confirm the fix
-
             Format the comment clearly with markdown headers. Be concise and actionable.
             Do NOT create a branch or PR — just post the comment.
-
             Use this command to post:
             gh pr comment ${{ steps.pr.outputs.number }} --body "<your analysis>"

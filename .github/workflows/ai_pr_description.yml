@@ -25,8 +25,10 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          allowed_tools: "Bash(gh pr comment*)"
           prompt: |-
-            Analyze the diff for this PR and post a comment with a business-friendly summary.
+            Analyze the diff for this PR and post a PR comment using `gh pr comment` with a business-friendly summary.
+            You MUST post the comment using: gh pr comment ${{ github.event.pull_request.number }} --body "..."
             Structure your comment as:
             ## AI PR Description
             ### Summary
@@ -51,6 +53,7 @@ jobs:
           EXISTING=$(gh api "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" --jq '[.[] | select(.body | contains("AI PR Description"))] | length')
           if [ "$EXISTING" = "0" ]; then
             BODY="## AI PR Description"
-            BODY="${BODY}\n\nNo description generated. Claude was unable to analyze this PR."
+            BODY="${BODY}\n\nAI description not available. The Claude analysis step did not produce a summary for this PR."
+            BODY="${BODY}\n\nThis may happen if the PR changes are too small to warrant a description or if the analysis timed out."
             printf '%b' "$BODY" | gh pr comment "$PR_NUMBER" --body-file -
           fi

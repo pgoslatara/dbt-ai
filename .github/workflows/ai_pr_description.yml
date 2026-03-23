@@ -25,18 +25,31 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           prompt: |-
-            Analyze the diff for this PR and update the PR description with a business-friendly summary.
-            Structure:
-            ## Summary
+            Analyze the diff for this PR and post a comment with a business-friendly summary.
+            Structure your comment as:
+            ## AI PR Description
+            ### Summary
             Brief overview of what changed and why.
 
-            ## dbt Model Changes
+            ### dbt Model Changes
             List any new, modified, or removed models with their layer (staging/intermediate/marts).
+            If no dbt models were changed, write "No dbt model changes."
 
-            ## Test Coverage
+            ### Test Coverage
             Note any new tests added or testing gaps.
 
-            ## Impact
+            ### Impact
             Describe downstream impact on other models or dashboards.
             Keep it concise and focused on business value, not implementation details.
-            Update the PR description using gh pr edit.
+      - name: Post description summary
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |-
+          EXISTING=$(gh api "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" --jq '[.[] | select(.body | contains("AI PR Description"))] | length')
+          if [ "$EXISTING" = "0" ]; then
+            BODY="## AI PR Description"
+            BODY="${BODY}\n\nNo description generated. Claude was unable to analyze this PR."
+            printf '%b' "$BODY" | gh pr comment "$PR_NUMBER" --body-file -
+          fi

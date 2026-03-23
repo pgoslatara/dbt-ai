@@ -1,9 +1,7 @@
 ---
 models:
   - name: dim_stations
-    description: >
-      Dimension table of all bikeshare stations across cities,
-      enriched with trip metrics.
+    description: "Dimension table of all bikeshare stations across cities, enriched with trip metrics.\n"
     config:
       contract:
         enforced: true
@@ -19,16 +17,18 @@ models:
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_between:
-              min_value: 0
+              arguments:
+                min_value: 0
       - name: city
         data_type: STRING
         description: City where the station is located
         tests:
           - not_null
           - accepted_values:
-              values:
-                - austin
-                - new_york
+              arguments:
+                values:
+                  - austin
+                  - new_york
       - name: city_full_name
         data_type: STRING
         description: Full display name of the city
@@ -60,10 +60,10 @@ models:
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_between:
-              min_value: 0
+              arguments:
+                min_value: 0
   - name: fct_daily_station_metrics
-    description: >
-      Daily aggregated metrics per station, built incrementally.
+    description: "Daily aggregated metrics per station, built incrementally.\n"
     config:
       contract:
         enforced: true
@@ -94,9 +94,7 @@ models:
         tests:
           - not_null
   - name: fct_trips
-    description: >
-      Fact table of all bikeshare trips with computed columns
-      for analysis.
+    description: "Fact table of all bikeshare trips with computed columns for analysis.\n"
     config:
       contract:
         enforced: true
@@ -118,8 +116,9 @@ models:
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_between:
-              min_value: 1
-              max_value: 7
+              arguments:
+                min_value: 1
+                max_value: 7
       - name: end_station_id
         data_type: STRING
         description: Station where the trip ended
@@ -156,7 +155,8 @@ models:
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_between:
-              min_value: 0
+              arguments:
+                min_value: 0
 
 unit_tests:
   - name: test_daily_metrics_aggregation
@@ -168,78 +168,133 @@ unit_tests:
     given:
       - input: ref('int_trips_unioned')
         rows:
-          - {trip_id: t1, city: austin, duration_minutes: 10.0, end_station_id: s2, ended_at: '2024-01-01 10:10:00', start_station_id: s1,
-            started_at: '2024-01-01 10:00:00'}
-          - {trip_id: t2, city: austin, duration_minutes: 20.0, end_station_id: s2, ended_at: '2024-01-01 10:30:00', start_station_id: s1,
-            started_at: '2024-01-01 10:10:00'}
-          - {trip_id: t3, city: austin, duration_minutes: 30.0, end_station_id: s2, ended_at: '2024-01-01 11:00:00', start_station_id: s1,
-            started_at: '2024-01-01 10:30:00'}
+          - trip_id: t1
+            city: austin
+            duration_minutes: 10.0
+            end_station_id: s2
+            ended_at: '2024-01-01 10:10:00'
+            start_station_id: s1
+            started_at: '2024-01-01 10:00:00'
+          - trip_id: t2
+            city: austin
+            duration_minutes: 20.0
+            end_station_id: s2
+            ended_at: '2024-01-01 10:30:00'
+            start_station_id: s1
+            started_at: '2024-01-01 10:10:00'
+          - trip_id: t3
+            city: austin
+            duration_minutes: 30.0
+            end_station_id: s2
+            ended_at: '2024-01-01 11:00:00'
+            start_station_id: s1
+            started_at: '2024-01-01 10:30:00'
     expect:
       rows:
-        - {station_id: s1, city: austin, metric_date: '2024-01-01', total_trips: 3, avg_trip_duration_minutes: 20.0}
+        - station_id: s1
+          city: austin
+          metric_date: '2024-01-01'
+          total_trips: 3
+          avg_trip_duration_minutes: 20.0
   - name: test_day_of_week_extraction
     description: Verify day_of_week is correctly extracted from started_at
     model: fct_trips
     given:
       - input: ref('int_trips_unioned')
         rows:
-          - {trip_id: t1, city: austin, duration_minutes: 15.0, end_station_id: s2, ended_at: '2024-01-03 10:15:00', start_station_id: s1,
-            started_at: '2024-01-03 10:00:00'}
+          - trip_id: t1
+            city: austin
+            duration_minutes: 15.0
+            end_station_id: s2
+            ended_at: '2024-01-03 10:15:00'
+            start_station_id: s1
+            started_at: '2024-01-03 10:00:00'
     expect:
       rows:
-        - {trip_id: t1, day_of_week: 4}
+        - trip_id: t1
+          day_of_week: 4
   - name: test_is_round_trip_false
     description: Trip with different start and end stations is not a round trip
     model: fct_trips
     given:
       - input: ref('int_trips_unioned')
         rows:
-          - {trip_id: t1, city: austin, duration_minutes: 10.0, end_station_id: s2, ended_at: '2024-01-01 10:10:00', start_station_id: s1,
-            started_at: '2024-01-01 10:00:00'}
+          - trip_id: t1
+            city: austin
+            duration_minutes: 10.0
+            end_station_id: s2
+            ended_at: '2024-01-01 10:10:00'
+            start_station_id: s1
+            started_at: '2024-01-01 10:00:00'
     expect:
       rows:
-        - {trip_id: t1, is_round_trip: false}
+        - trip_id: t1
+          is_round_trip: false
   - name: test_is_round_trip_true
     description: Trip with same start and end station is a round trip
     model: fct_trips
     given:
       - input: ref('int_trips_unioned')
         rows:
-          - {trip_id: t1, city: austin, duration_minutes: 10.0, end_station_id: s1, ended_at: '2024-01-01 10:10:00', start_station_id: s1,
-            started_at: '2024-01-01 10:00:00'}
+          - trip_id: t1
+            city: austin
+            duration_minutes: 10.0
+            end_station_id: s1
+            ended_at: '2024-01-01 10:10:00'
+            start_station_id: s1
+            started_at: '2024-01-01 10:00:00'
     expect:
       rows:
-        - {trip_id: t1, is_round_trip: true}
+        - trip_id: t1
+          is_round_trip: true
   - name: test_is_weekend_saturday
     description: Trip on Saturday (day 7) is flagged as weekend
     model: fct_trips
     given:
       - input: ref('int_trips_unioned')
         rows:
-          - {trip_id: t1, city: austin, duration_minutes: 10.0, end_station_id: s2, ended_at: '2024-01-06 10:10:00', start_station_id: s1,
-            started_at: '2024-01-06 10:00:00'}
+          - trip_id: t1
+            city: austin
+            duration_minutes: 10.0
+            end_station_id: s2
+            ended_at: '2024-01-06 10:10:00'
+            start_station_id: s1
+            started_at: '2024-01-06 10:00:00'
     expect:
       rows:
-        - {trip_id: t1, is_weekend: true}
+        - trip_id: t1
+          is_weekend: true
   - name: test_is_weekend_weekday
     description: Trip on Wednesday is not flagged as weekend
     model: fct_trips
     given:
       - input: ref('int_trips_unioned')
         rows:
-          - {trip_id: t1, city: austin, duration_minutes: 10.0, end_station_id: s2, ended_at: '2024-01-03 10:10:00', start_station_id: s1,
-            started_at: '2024-01-03 10:00:00'}
+          - trip_id: t1
+            city: austin
+            duration_minutes: 10.0
+            end_station_id: s2
+            ended_at: '2024-01-03 10:10:00'
+            start_station_id: s1
+            started_at: '2024-01-03 10:00:00'
     expect:
       rows:
-        - {trip_id: t1, is_weekend: false}
+        - trip_id: t1
+          is_weekend: false
   - name: test_trip_duration_passthrough
     description: Duration minutes is passed through from upstream
     model: fct_trips
     given:
       - input: ref('int_trips_unioned')
         rows:
-          - {trip_id: t1, city: austin, duration_minutes: 25.5, end_station_id: s2, ended_at: '2024-01-01 10:25:30', start_station_id: s1,
-            started_at: '2024-01-01 10:00:00'}
+          - trip_id: t1
+            city: austin
+            duration_minutes: 25.5
+            end_station_id: s2
+            ended_at: '2024-01-01 10:25:30'
+            start_station_id: s1
+            started_at: '2024-01-01 10:00:00'
     expect:
       rows:
-        - {trip_id: t1, trip_duration_minutes: 25.5}
+        - trip_id: t1
+          trip_duration_minutes: 25.5

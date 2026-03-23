@@ -13,29 +13,33 @@ models:
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_between:
-              min_value: 0
-              max_value: 200
+              arguments:
+                min_value: 0
+                max_value: 200
       - name: city
         description: City where the station is located
         tests:
           - not_null
           - accepted_values:
-              values:
-                - new_york
+              arguments:
+                values:
+                  - new_york
       - name: latitude
         description: Latitude coordinate of the station
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_between:
-              min_value: 40
-              max_value: 42
+              arguments:
+                min_value: 40
+                max_value: 42
       - name: longitude
         description: Longitude coordinate of the station
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_between:
-              min_value: -75
-              max_value: -73
+              arguments:
+                min_value: -75
+                max_value: -73
       - name: station_name
         description: Human-readable name of the station
         tests:
@@ -61,18 +65,20 @@ models:
         tests:
           - not_null
           - accepted_values:
-              values:
-                - new_york
+              arguments:
+                values:
+                  - new_york
       - name: duration_minutes
         description: Duration of the trip in minutes
       - name: end_station_id
         description: Station where the trip ended
         tests:
           - relationships:
-              to: ref('stg_new_york_citibike__stations')
-              field: station_id
               config:
                 severity: warn
+              arguments:
+                to: ref('stg_new_york_citibike__stations')
+                field: station_id
       - name: ended_at
         description: Timestamp when the trip ended
         tests:
@@ -86,10 +92,11 @@ models:
               config:
                 severity: warn
           - relationships:
-              to: ref('stg_new_york_citibike__stations')
-              field: station_id
               config:
                 severity: warn
+              arguments:
+                to: ref('stg_new_york_citibike__stations')
+                field: station_id
       - name: started_at
         description: Timestamp when the trip started
         tests:

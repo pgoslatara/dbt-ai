@@ -13,22 +13,25 @@ models:
         tests:
           - not_null
           - accepted_values:
-              values:
-                - austin
+              arguments:
+                values:
+                  - austin
       - name: latitude
         description: Latitude coordinate of the station
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_between:
-              min_value: 25
-              max_value: 35
+              arguments:
+                min_value: 25
+                max_value: 35
       - name: longitude
         description: Longitude coordinate of the station
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_between:
-              min_value: -100
-              max_value: -95
+              arguments:
+                min_value: -100
+                max_value: -95
       - name: station_name
         description: Human-readable name of the station
         tests:
@@ -50,8 +53,9 @@ models:
         tests:
           - not_null
           - accepted_values:
-              values:
-                - austin
+              arguments:
+                values:
+                  - austin
       - name: duration_minutes
         description: Duration of the trip in minutes
         tests:
@@ -60,10 +64,11 @@ models:
         description: Station where the trip ended
         tests:
           - relationships:
-              to: ref('stg_austin_bikeshare__stations')
-              field: station_id
               config:
                 severity: warn
+              arguments:
+                to: ref('stg_austin_bikeshare__stations')
+                field: station_id
       - name: ended_at
         description: Timestamp when the trip ended
         tests:
@@ -75,10 +80,11 @@ models:
               config:
                 severity: warn
           - relationships:
-              to: ref('stg_austin_bikeshare__stations')
-              field: station_id
               config:
                 severity: warn
+              arguments:
+                to: ref('stg_austin_bikeshare__stations')
+                field: station_id
       - name: started_at
         description: Timestamp when the trip started
         tests:

@@ -1,0 +1,70 @@
+name: Auto-Document dbt Models
+
+on:
+  pull_request:
+    paths:
+      - 'models/**/*.sql'
+
+jobs:
+  auto-document:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Setup uv and Python
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "latest"
+      
+      - name: Get changed SQL files
+        id: changed-files
+        run: |
+          # Get list of changed .sql files in models/
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | grep '^models/.*\.sql$' || true)
+          echo "files<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGED_FILES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Run Claude to generate missing docs
+        if: steps.changed-files.outputs.files != ''
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prompt: |
+            A developer modified or added these dbt SQL files:
+            ${{ steps.changed-files.outputs.files }}
+
+            For each SQL file:
+            1. Find its corresponding `_<layer>__models.yml` or `_<source>__models.yml` file.
+            2. Parse the SQL to identify all new columns.
+            3. Update the YAML file with descriptions for any missing columns, and ensure the model itself has a description.
+            4. Use the `yamlfix` or standard formatting to ensure the YAML is valid.
+            
+            Do not add tests, only `description` fields.
+            Do not modify the SQL files.
+            Once you have updated the YAML files, stop.
+
+      - name: Commit generated documentation
+        if: steps.changed-files.outputs.files != ''
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add models/**/*.yml
+          
+          if ! git diff --cached --quiet; then
+            git commit -m "docs: auto-generate missing dbt descriptions via Claude"
+            git push
+            
+            gh pr comment ${{ github.event.pull_request.number }} --body "🤖 **Claude Auto-Doc:** I noticed you changed some SQL files without updating the YAML documentation. I've automatically generated descriptions for your new columns and committed them to this branch."
+          else
+            echo "No documentation updates were needed."
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

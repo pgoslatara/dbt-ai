@@ -198,6 +198,7 @@ Every PR gets reviewed by Claude as a **senior dbt engineer**:
 - Missing tests and documentation
 - Performance concerns (full scans, wrong materializations)
 - Business logic correctness
+- **Always posts a summary comment** — visible trace on every PR
 
 ```yaml
 # .github/workflows/claude_pr_review.yml
@@ -207,7 +208,9 @@ with:
     Review this PR as a senior dbt/analytics engineer...
 ```
 
-<!-- Speaker notes: This runs on every PR via GitHub Actions. It's not a replacement for human review — it's a first pass that catches the mechanical stuff so your human reviewers can focus on design and logic. ~1.5 minutes -->
+A fallback step posts "No issues found" if Claude has no feedback — so you always know the review ran.
+
+<!-- Speaker notes: This runs on every PR via GitHub Actions. It's not a replacement for human review — it's a first pass that catches the mechanical stuff so your human reviewers can focus on design and logic. A fallback step ensures every review leaves a visible comment, even when nothing is flagged. ~1.5 minutes -->
 
 ---
 
@@ -363,11 +366,15 @@ Staging (source-specific) -> Intermediate (unified) -> Marts (business metrics)
 
 **PR opened -> Claude comments within minutes:**
 
-- "Column `station_id` should have a `not_null` test"
-- "Consider `incremental` materialization for this large fact table"
-- "Missing description for `is_weekend` column"
+- "`GROUP BY total_trips` treats the metric as a grouping key — use `SUM()` instead"
+- "Global `tests: +severity: warn` suppresses all test failures — scope to staging"
+- "`cloud_event["data"]` raises TypeError — use `.data` attribute access"
 
-<!-- Speaker notes: BACKUP SLIDE. Show a real PR with Claude's review comments. Point out the quality and specificity of the feedback. ~1.5 minutes -->
+**No issues?** Claude still posts:
+
+> **Claude Code Review** — No issues found. Reviewed for SQL style, naming conventions, tests, documentation, performance, business logic, and materializations.
+
+<!-- Speaker notes: BACKUP SLIDE. Show a real PR with Claude's review comments. These are actual issues caught on our PR. Point out how it found a real SQL bug (wrong GROUP BY), a config issue (global severity), and a runtime error (CloudEvent access). Even when nothing is found, a comment is always posted. ~1.5 minutes -->
 
 ---
 
@@ -402,8 +409,10 @@ Staging (source-specific) -> Intermediate (unified) -> Marts (business metrics)
 - Token costs add up with large diffs
 - Keep CLAUDE.md updated as conventions evolve
 - Unit test mock data needs to match your column types exactly
+- Public data quality issues cascade through all layers — scope `severity: warn` accordingly
+- Formatter vs convention conflicts (e.g. sqlfmt lowercase vs CLAUDE.md uppercase) — pick one source of truth
 
-<!-- Speaker notes: Be honest about limitations. AI is a teammate, not a replacement. The cost is real but worth it for the time saved. ~1.5 minutes -->
+<!-- Speaker notes: Be honest about limitations. AI is a teammate, not a replacement. The cost is real but worth it for the time saved. We learned the hard way that null values in public datasets cascade from staging through marts, so you need to set test severity globally rather than per-layer. Also, automated formatters like sqlfmt can conflict with your stated conventions — make sure CLAUDE.md reflects your actual enforced style. ~2 minutes -->
 
 ---
 

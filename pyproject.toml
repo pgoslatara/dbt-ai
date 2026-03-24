@@ -36,6 +36,9 @@ ignore = [
 [tool.ruff.lint.pydocstyle]
 convention = "google"
 
+[tool.rumdl.global]
+disable = ["MD013", "MD025", "MD031", "MD032", "MD036", "MD040", "MD046"]
+
 [tool.sqlfmt]
 dialect = "polyglot"
 line_length = 120

@@ -1,4 +1,0 @@
-# rumdl configuration file
-
-[global]
-disable = ["MD013", "MD025", "MD031", "MD032", "MD036", "MD040", "MD046"]

@@ -1,9 +1,10 @@
+---
 name: Real-Time Cost Estimation
 
 on:
   pull_request:
     paths:
-      - 'models/**/*.sql'
+      - models/**/*.sql
 
 env:
   GCP_PROJECT: ${{ secrets.GCP_PROJECT_ID }}
@@ -20,21 +21,17 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
       - name: Setup uv and Python
         uses: astral-sh/setup-uv@v3
         with:
-          version: "latest"
-
+          version: latest
       - name: Authenticate to GCP
         uses: google-github-actions/auth@v2
         with:
           service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
           workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-
       - name: Setup gcloud
         uses: google-github-actions/setup-gcloud@v2
-
       - name: Get changed SQL files
         id: changed-files
         run: |
@@ -42,64 +39,51 @@ jobs:
           echo "files<<EOF" >> $GITHUB_OUTPUT
           echo "$CHANGED_FILES" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
-
       - name: Compile and Dry-Run
         if: steps.changed-files.outputs.files != ''
         id: dry-run
         run: |
           uv sync
-          
+
           # Compile the project to resolve refs and generate target/compiled/
           # We need to set a dummy token for dbt to run compile without hitting the real DB if we don't want to
           # but we do want the real DB, so auth is provided above.
           uv run dbt deps
           uv run dbt compile
-          
           RESULTS=""
           for file in ${{ steps.changed-files.outputs.files }}; do
             COMPILED_FILE="target/compiled/dbt_ai/$file"
-            
             if [ -f "$COMPILED_FILE" ]; then
               echo "Dry running: $file"
               # Execute a dry run against BigQuery to fetch bytes processed
               # Ensure jq is installed
               sudo apt-get install jq -y
-              
               DRY_RUN_OUTPUT=$(bq query --use_legacy_sql=false --dry_run --format=json "$(cat $COMPILED_FILE)" 2>&1 || true)
-              
               BYTES_PROCESSED=$(echo $DRY_RUN_OUTPUT | jq -r '.statistics.totalBytesProcessed // empty' || true)
-              
               if [ -n "$BYTES_PROCESSED" ]; then
                 # Convert bytes to Terabytes (1 TB = 10^12 bytes)
                 # Cost is $6.25 per TB (default BQ on-demand pricing)
                 TB_PROCESSED=$(echo "scale=4; $BYTES_PROCESSED / 1000000000000" | bc)
                 COST=$(echo "scale=4; $TB_PROCESSED * 6.25" | bc)
-                
                 RESULTS="${RESULTS}\nFile: \`${file}\`\n- Bytes processed: ${BYTES_PROCESSED} bytes (~${TB_PROCESSED} TB)\n- Estimated cost per run: \$${COST}\n"
               else
                 RESULTS="${RESULTS}\nFile: \`${file}\`\n- Dry run failed or returned no bytes.\n"
               fi
             fi
           done
-          
           echo "results<<EOF" >> $GITHUB_OUTPUT
           echo -e "$RESULTS" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
-
       - name: Claude Cost Analysis
         if: steps.changed-files.outputs.files != ''
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          prompt: |
+          prompt: |-
             A developer modified dbt SQL models. A BigQuery dry-run was executed to calculate the estimated cost per execution.
-            
             Dry-Run Results:
             ${{ steps.dry-run.outputs.results }}
-            
             Review the costs. If the cost of running any model exceeds $1.00 per run, alert the user and analyze the SQL in the PR diff for missing partition filters, full table scans, or cross joins that could be optimizing the cost.
-            
             Create a PR comment summarising the estimated costs of their changes and any optimization recommendations.
-            
             gh pr comment ${{ github.event.pull_request.number }} --body "<your analysis>"

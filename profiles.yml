@@ -10,7 +10,7 @@ dbt_ai:
       method: oauth
       priority: interactive
       project: "{{ env_var('GCP_PROJECT', 'dbt-ai-demo') }}"
-      threads: 4
+      threads: 16
       type: bigquery
     dev:
       dataset: dbt_ai_dev
@@ -20,7 +20,7 @@ dbt_ai:
       method: oauth
       priority: interactive
       project: "{{ env_var('GCP_PROJECT', 'dbt-ai-demo') }}"
-      threads: 4
+      threads: 16
       type: bigquery
     prod:
       dataset: dbt_ai_prod
@@ -30,5 +30,5 @@ dbt_ai:
       method: oauth
       priority: interactive
       project: "{{ env_var('GCP_PROJECT', 'dbt-ai-demo') }}"
-      threads: 4
+      threads: 16
       type: bigquery

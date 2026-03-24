@@ -15,6 +15,13 @@ with
             cast(start_time as timestamp) as started_at,
             subscriber_type
         from source
+        where
+            start_time is not null
+            and duration_minutes is not null
+            and start_station_id is not null
+            and end_station_id is not null
+            and cast(start_station_id as string) in (select station_id from {{ ref("stg_austin_bikeshare__stations") }})
+            and cast(end_station_id as string) in (select station_id from {{ ref("stg_austin_bikeshare__stations") }})
     )
 
 select *

@@ -64,8 +64,6 @@ models:
         description: Station where the trip ended
         tests:
           - relationships:
-              config:
-                severity: warn
               arguments:
                 to: ref('stg_austin_bikeshare__stations')
                 field: station_id
@@ -76,12 +74,8 @@ models:
       - name: start_station_id
         description: Station where the trip started
         tests:
-          - not_null:
-              config:
-                severity: warn
+          - not_null
           - relationships:
-              config:
-                severity: warn
               arguments:
                 to: ref('stg_austin_bikeshare__stations')
                 field: station_id

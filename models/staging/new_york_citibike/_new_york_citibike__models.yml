@@ -51,15 +51,11 @@ models:
         description: Unique identifier for the trip
         tests:
           - not_null
-          - unique:
-              config:
-                severity: warn
+          - unique
       - name: bike_id
         description: Unique identifier for the bike used
         tests:
-          - not_null:
-              config:
-                severity: warn
+          - not_null
       - name: city
         description: City where the trip occurred
         tests:
@@ -74,34 +70,24 @@ models:
         description: Station where the trip ended
         tests:
           - relationships:
-              config:
-                severity: warn
               arguments:
                 to: ref('stg_new_york_citibike__stations')
                 field: station_id
       - name: ended_at
         description: Timestamp when the trip ended
         tests:
-          - not_null:
-              config:
-                severity: warn
+          - not_null
       - name: start_station_id
         description: Station where the trip started
         tests:
-          - not_null:
-              config:
-                severity: warn
+          - not_null
           - relationships:
-              config:
-                severity: warn
               arguments:
                 to: ref('stg_new_york_citibike__stations')
                 field: station_id
       - name: started_at
         description: Timestamp when the trip started
         tests:
-          - not_null:
-              config:
-                severity: warn
+          - not_null
       - name: user_type
         description: Type of user (subscriber or customer)

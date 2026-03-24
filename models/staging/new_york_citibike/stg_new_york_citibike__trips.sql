@@ -14,6 +14,15 @@ with
             {{ dbt_utils.generate_surrogate_key(["bikeid", "starttime", "start_station_id"]) }} as trip_id,
             usertype as user_type
         from source
+        where
+            bikeid is not null
+            and starttime is not null
+            and stoptime is not null
+            and start_station_id is not null
+            and end_station_id is not null
+            and cast(start_station_id as string)
+            in (select station_id from {{ ref("stg_new_york_citibike__stations") }})
+            and cast(end_station_id as string) in (select station_id from {{ ref("stg_new_york_citibike__stations") }})
     )
 
 select *

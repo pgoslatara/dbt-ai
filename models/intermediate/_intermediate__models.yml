@@ -74,30 +74,20 @@ models:
       - name: duration_minutes
         description: Duration of the trip in minutes
         tests:
-          - not_null:
-              config:
-                severity: warn
+          - not_null
       - name: end_station_id
         description: Station where the trip ended
         tests:
-          - not_null:
-              config:
-                severity: warn
+          - not_null
       - name: ended_at
         description: Timestamp when the trip ended
         tests:
-          - not_null:
-              config:
-                severity: warn
+          - not_null
       - name: start_station_id
         description: Station where the trip started
         tests:
-          - not_null:
-              config:
-                severity: warn
+          - not_null
       - name: started_at
         description: Timestamp when the trip started
         tests:
-          - not_null:
-              config:
-                severity: warn
+          - not_null

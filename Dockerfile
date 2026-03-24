@@ -7,6 +7,7 @@ COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev --no-install-project
 
 COPY dbt_project.yml packages.yml profiles.yml ./
+COPY macros/ macros/
 COPY models/ models/
 COPY seeds/ seeds/
 COPY tests/ tests/

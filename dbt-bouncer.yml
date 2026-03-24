@@ -3,7 +3,6 @@ manifest_checks:
   - name: check_model_has_contracts_enforced
     include: ^models/marts
   - name: check_model_description_populated
-    include: ^models
   - name: check_model_test_coverage
     min_model_test_coverage_pct: 100
   - name: check_model_names
@@ -16,11 +15,8 @@ manifest_checks:
     include: ^models/staging
     model_name_pattern: ^stg_
   - name: check_source_description_populated
-    include: ^models
   - name: check_source_freshness_populated
-    include: ^models
   - name: check_source_loader_populated
-    include: ^models
 
 run_results_checks:
   - name: check_run_results_max_execution_time

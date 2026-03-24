@@ -39,6 +39,7 @@ convention = "google"
 [tool.sqlfmt]
 dialect = "polyglot"
 line_length = 120
+exclude = ["target/**/*", "dbt_packages/**/*", ".venv/**/*"]
 
 [tool.yamlfix]
 line_length = 120

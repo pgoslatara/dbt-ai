@@ -1,9 +1,7 @@
 ---
 models:
   - name: int_stations_unioned
-    description: >
-      Union of all bikeshare stations across cities (Austin and NYC)
-      with a standardized schema.
+    description: "Union of all bikeshare stations across cities (Austin and NYC) with a standardized schema.\n"
     columns:
       - name: station_id
         description: Unique identifier for the station (unique within a city)
@@ -14,9 +12,10 @@ models:
         tests:
           - not_null
           - accepted_values:
-              values:
-                - austin
-                - new_york
+              arguments:
+                values:
+                  - austin
+                  - new_york
       - name: city_full_name
         description: Full display name of the city
         tests:
@@ -38,8 +37,7 @@ models:
         tests:
           - not_null
   - name: int_trip_metrics_by_station
-    description: >
-      Aggregated trip counts and average durations per station and city.
+    description: "Aggregated trip counts and average durations per station and city.\n"
     columns:
       - name: station_id
         description: Unique identifier for the station
@@ -58,9 +56,7 @@ models:
         tests:
           - not_null
   - name: int_trips_unioned
-    description: >
-      Union of all bikeshare trips across cities (Austin and NYC)
-      with a standardized schema.
+    description: "Union of all bikeshare trips across cities (Austin and NYC) with a standardized schema.\n"
     columns:
       - name: trip_id
         description: Unique identifier for the trip
@@ -71,9 +67,10 @@ models:
         tests:
           - not_null
           - accepted_values:
-              values:
-                - austin
-                - new_york
+              arguments:
+                values:
+                  - austin
+                  - new_york
       - name: duration_minutes
         description: Duration of the trip in minutes
         tests:

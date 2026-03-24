@@ -23,7 +23,7 @@ help: ## Show this help message
 
 lint: ## Run all linters
 	uv run prek run -a
-	uv run pytest
+	uv run pytest || [ $$? -eq 5 ]
 
 run: ## Run dbt build
 	uv run dbt build

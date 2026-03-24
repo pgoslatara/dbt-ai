@@ -1,0 +1,182 @@
+---
+name: AI PR Review
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+
+concurrency:
+  group: ai-pr-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    name: AI PR Review
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Analyze PR
+        id: claude
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          show_full_output: true
+          claude_args: "--allowedTools 'Bash(git diff*),Bash(git log*),Bash(git show*),Read,Glob,Grep'"
+          prompt: |-
+            You are a senior dbt/analytics engineer reviewing a PR for a bike-share analytics
+            project using BigQuery. This PR changes ${{ github.event.pull_request.changed_files }} files.
+
+            Analyze the full diff for this PR. For each file, determine what changed and WHY.
+            Identify dbt model changes by layer. Check for test coverage gaps. Review code quality.
+
+            ## Review Criteria
+
+            Check for these issues and report them in the Review Findings section:
+            1. **SQL Style**: Uppercase keywords (SELECT, FROM, WHERE), snake_case names, one column per line, table aliases in joins, CTEs over subqueries.
+            2. **Naming Conventions**: staging=`stg_<source>__<entity>`, intermediate=`int_`, dimensions=`dim_`, facts=`fct_`.
+            3. **Missing Tests**: Every model needs at least `not_null`/`unique` on primary keys. Check for `accepted_values`, `relationships` where appropriate.
+            4. **Missing Documentation**: Every model and column should have descriptions in YAML.
+            5. **Performance**: Flag full table scans, missing incremental strategies on large tables, `SELECT *`.
+            6. **Business Logic**: Verify computed columns (e.g. `is_round_trip`, `trip_duration_minutes`, `day_of_week`) are correct.
+            7. **Materializations**: Staging/intermediate should be views, marts should be tables or incremental.
+
+            ## Severity Levels
+
+            Use these severity levels for review findings:
+            - 🔴 **Issue** — bugs, `SELECT *`, wrong materialization, missing required tests on primary keys
+            - 🟡 **Suggestion** — performance improvements, optional tests, documentation gaps
+            - ✅ **All clear** — explicitly state when a category has no issues (proves it was checked)
+
+            ## Adaptive Collapsibility
+
+            If this PR changes 4 or more files, wrap the "File Changes" table and "Review Findings"
+            section in `<details>` blocks like:
+            ```
+            <details>
+            <summary>📄 File Changes (N files)</summary>
+
+            | File | Change | Description |
+            ...
+
+            </details>
+            ```
+            If fewer than 4 files, show them expanded (no `<details>` wrapper).
+
+            ## Output Format
+
+            Output ONLY the markdown below. No preamble, no explanation outside the markdown.
+            Start your output with the exact string `<!-- ai-pr-review-marker -->`.
+
+            <!-- ai-pr-review-marker -->
+            ## 🔍 AI PR Review
+
+            > **One-sentence TL;DR of the PR's purpose and business value.**
+
+            **Type:** `feature` | `bugfix` | `refactor` | `docs` | `chore` | `test`
+
+            ### Summary
+            2-3 sentences explaining what changed and **why**. Focus on intent and business value,
+            not implementation details. Explain how files relate to each other.
+
+            ### File Changes
+            | File | Change | Description |
+            |------|--------|-------------|
+            | `path/to/file` | New/Modified/Deleted | One-line description of what changed in this file |
+
+            ### dbt Model Changes
+            - **New models:** `model_name` (layer, materialization)
+            - **Modified models:** `model_name` (layer, materialization)
+            - **Removed models:** `model_name`
+            - **Lineage impact:** Downstream models affected and how
+            (If no dbt models were changed, write "No dbt model changes.")
+
+            ### Test Coverage
+            - ✅ Added: description of tests added
+            - ⚠️ Gap: description of missing tests that should be added
+            (If no test changes and no gaps, write "No test changes. Existing coverage is adequate.")
+
+            ### Review Findings
+            - 🔴 **Issue:** file:line — description
+            - 🟡 **Suggestion:** file:line — description
+            - ✅ No issues with [category]
+            (If no issues at all, write "✅ No issues found. Reviewed for SQL style, naming conventions, tests, documentation, performance, business logic, and materializations.")
+
+            ---
+            *Generated by [Claude Code](https://github.com/anthropics/claude-code-action)*
+      - name: Post or update review comment
+        if: always()
+        env:
+          CLAUDE_OUTPUT: ${{ steps.claude.outputs.result }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |-
+          # --- Helper: generate fallback comment from git diff ---
+          generate_fallback() {
+            DIFF_STAT=$(git diff origin/main...HEAD --stat | tail -1)
+            echo "<!-- ai-pr-review-marker -->"
+            echo "## 🔍 AI PR Review"
+            echo ""
+            echo "> Auto-generated fallback — Claude analysis was not available."
+            echo ""
+            echo "**Type:** \`unknown\`"
+            echo ""
+            echo "### Summary"
+            echo "This PR modifies the following files:"
+            echo ""
+            echo "### File Changes"
+            echo "| File | Change | Description |"
+            echo "|------|--------|-------------|"
+            git diff origin/main...HEAD --name-status | while IFS=$'\t' read -r status file; do
+              case "$status" in
+                A) change="New" ;;
+                M) change="Modified" ;;
+                D) change="Deleted" ;;
+                R*) change="Renamed" ;;
+                *) change="$status" ;;
+              esac
+              echo "| \`${file}\` | ${change} | — |"
+            done
+            echo ""
+            echo "**Diff stats:** ${DIFF_STAT}"
+            echo ""
+            echo "---"
+            echo "*Generated by [Claude Code](https://github.com/anthropics/claude-code-action) (fallback)*"
+          }
+
+          # --- Extract Claude's markdown or generate fallback ---
+          if echo "$CLAUDE_OUTPUT" | grep -q "ai-pr-review-marker"; then
+            echo "$CLAUDE_OUTPUT" | sed -n '/<!-- ai-pr-review-marker -->/,$ p' > /tmp/comment.md
+          else
+            generate_fallback > /tmp/comment.md
+          fi
+
+          # --- Upsert: update existing comment or create new one ---
+          MARKER="ai-pr-review-marker"
+          COMMENT_IDS=$(gh api "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" \
+            --jq "[.[] | select(.body | contains(\"${MARKER}\")) | .id]")
+
+          FIRST_ID=$(echo "$COMMENT_IDS" | jq -r 'first // empty')
+          REST_IDS=$(echo "$COMMENT_IDS" | jq -r '.[1:] | .[]')
+
+          if [ -n "$FIRST_ID" ]; then
+            # Update the first matching comment
+            gh api -X PATCH "repos/${GITHUB_REPOSITORY}/issues/comments/${FIRST_ID}" \
+              -f body="$(cat /tmp/comment.md)"
+            # Delete any duplicates from race conditions
+            for CID in $REST_IDS; do
+              gh api -X DELETE "repos/${GITHUB_REPOSITORY}/issues/comments/${CID}" || true
+            done
+          else
+            # Create new comment
+            gh pr comment "$PR_NUMBER" --body-file /tmp/comment.md
+          fi

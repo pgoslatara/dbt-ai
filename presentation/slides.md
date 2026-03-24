@@ -143,8 +143,9 @@ Padraic Slattery
 4. Automated code review
 5. Agentic workflows & data quality monitoring
 6. Unit tests & hooks
-7. **Live demo**
-8. Lessons learned
+7. **Cutting-edge Wow Factors (MCP, Auto-Docs, Cost Agents)**
+8. **Live demo**
+9. Lessons learned
 
 <!-- Speaker notes: Here's what we'll cover in the next 20 minutes. The live demo is about 6 minutes — I'll generate a model, open a PR, and show the AI in action. ~30 seconds -->
 
@@ -393,6 +394,26 @@ Cloud Run fails → Cloud Monitoring alert
 **Self-healing pipelines** — failures are analyzed and fixes proposed automatically.
 
 <!-- Speaker notes: This is where it gets really interesting. When CI fails on a PR, Claude automatically analyzes the logs and posts a comment with the root cause and suggested fix. For production failures, it goes further and creates a fix PR. ~2 minutes -->
+
+---
+
+<!-- _class: lead -->
+
+# Cutting-Edge "Wow Factors"
+
+**1. Model Context Protocol (MCP)**
+Claude reads `target/manifest.json` as a structured graph, enabling hallucination-free questions about lineage and the Semantic layer.
+
+**2. Anti-Hallucination Harness**
+New `/generate-verified-model` explicitly validates required upstream schemas against the compiled manifest before writing SQL.
+
+**3. Automated CI Documentation (diff2docs)**
+Forget to update YAML? Claude reads the SQL diff and automatically pushes new column descriptions directly to your PR branch.
+
+**4. Real-time Cost Estimation Agent**
+GitHub Actions runs a BQ dry-run on every PR. Claude analyzes the resulting bytes processed and comments on the PR with the estimated cost and optimization tips.
+
+<!-- Speaker notes: These are features we are rolling out now based on what we saw at Coalesce. By hooking Claude up to the dbt MCP server and building agentic workflows on top of BigQuery's dry-run API, the AI isn't just generating text; it's reasoning with perfect project context. ~2 minutes -->
 
 ---
 

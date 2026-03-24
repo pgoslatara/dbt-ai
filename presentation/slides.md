@@ -231,16 +231,30 @@ Purpose-built AI skills from **dbt Labs**:
 | `/generate-staging-model` | Full model + YAML + tests from source |
 | `/add-tests` | Comprehensive tests for any model |
 | `/document-model` | Descriptions for model + columns |
-| `/explain-model` | Plain-English model explanation |
-| `/suggest-tests` | Analyze and propose missing tests |
-| `/impact-analysis` | Trace downstream dependencies |
 | `/generate-unit-tests` | Unit tests for computed columns |
-| `/review-sql` | BigQuery performance review |
-| `/generate-exposure` | Exposure from description |
+| `/generate-verified-model` | Manifest-validated model generation |
+| `/generate-exposure` | Exposure from plain-English description |
 
-**9 commands** — each encodes project conventions from CLAUDE.md.
+**Use when:** task is user-initiated, needs an explicit argument, and follows a predictable, templated output pattern.
 
-<!-- Speaker notes: We went from 3 commands to 9. Each one encodes our project's conventions. Any developer can use them without knowing the patterns by heart. ~1 minute -->
+<!-- Speaker notes: These are the generation commands — they take an argument and produce or modify files. Any developer can use them without knowing the project patterns by heart. -->
+
+---
+
+# Skills
+
+| Skill | What it does |
+|-------|-------------|
+| `dbt-explain-model` | Plain-English model explanation |
+| `dbt-impact-analysis` | Downstream dependency analysis |
+| `dbt-review-sql` | BigQuery performance review |
+| `dbt-suggest-tests` | Propose missing tests |
+
+**Use when:** task encodes how Claude thinks about a class of problem — a multi-step protocol reusable across projects, invokable naturally or via slash command.
+
+> Also invokable as `/explain-model`, `/impact-analysis`, `/review-sql`, `/suggest-tests`
+
+<!-- Speaker notes: Skills are behavioral protocols, not just prompt templates. They live in ~/.claude/skills/ so they work in any dbt project, not just this one. Claude can also invoke them proactively without the user typing a slash command. -->
 
 ---
 
@@ -521,7 +535,7 @@ Staging (source-specific) -> Intermediate (unified) -> Marts (business metrics)
 
 1. **Add `CLAUDE.md`** to your dbt project with your conventions
 2. **Install dbt-agent-skills** in Claude Code
-3. **Create slash commands** for your common patterns
+3. **Create slash commands and skills** for your common patterns
 4. **Add PR review workflow** (< 20 lines of YAML)
 5. **Start with one agentic workflow** and expand
 

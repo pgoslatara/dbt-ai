@@ -74,6 +74,14 @@ Downstream consumers are documented as dbt exposures, making them visible in the
 
 A weekly GitHub Actions workflow queries production BigQuery data for statistical anomalies (trip volume spikes, duration outliers, data freshness issues) and creates a GitHub issue with AI-analyzed findings.
 
+## Presentation
+
+The slide deck for the Amsterdam dbt Meetup is available on Google Slides (Xebia template):
+
+**[AI-Powered dbt — Amsterdam dbt Meetup (26 March 2026)](https://docs.google.com/presentation/d/1jWjz7QxmWajZzxfElCxzrX_sCVKndjzLZxRqE1Cq22w/edit)**
+
+The source is also maintained as a [Marp markdown deck](presentation/slides.md) in this repository.
+
 ## Getting Started
 
 ### Prerequisites

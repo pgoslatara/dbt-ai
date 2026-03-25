@@ -80,8 +80,6 @@ The slide deck for the Amsterdam dbt Meetup is available on Google Slides (Xebia
 
 **[AI-Powered dbt — Amsterdam dbt Meetup (26 March 2026)](https://docs.google.com/presentation/d/1jWjz7QxmWajZzxfElCxzrX_sCVKndjzLZxRqE1Cq22w/edit)**
 
-The source is also maintained as a [Marp markdown deck](presentation/slides.md) in this repository.
-
 ## Getting Started
 
 ### Prerequisites
@@ -160,7 +158,6 @@ make docs       # Generate and serve dbt docs
 │   ├── staging/          # Source-specific models
 │   ├── intermediate/     # Cross-source unions
 │   └── marts/            # Business-ready tables
-├── presentation/         # Marp slide deck
 ├── scripts/              # Setup and utility scripts
 ├── tests/                # Custom data tests
 ├── CLAUDE.md             # AI project instructions

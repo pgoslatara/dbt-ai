@@ -1,9 +1,9 @@
 .DEFAULT_GOAL := help
 
-.PHONY: clean format freshness lint run setup slides
+.PHONY: clean format freshness lint run setup
 
 clean: ## Remove build artifacts
-	rm -rf target/ dbt_packages/ logs/ presentation/dist/
+	rm -rf target/ dbt_packages/ logs/
 
 format: ## Format code
 	uv run ruff check --fix .
@@ -22,7 +22,3 @@ setup: ## Install dependencies and set up project
 	uv sync
 	uv run dbt deps
 	uv run prek install
-
-slides: ## Build Marp presentation to HTML
-	mkdir -p presentation/dist
-	npx @marp-team/marp-cli presentation/slides.md --output presentation/dist/slides.html --allow-local-files

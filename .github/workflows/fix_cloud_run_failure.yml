@@ -105,16 +105,24 @@ jobs:
             Execution: ${{ steps.resolve.outputs.execution_name }}
             Here are the execution details and logs:
             ${{ env.CLOUD_RUN_LOGS }}
+            IMPORTANT — check the logs above first:
+            - If the "Execution Logs" section contains "PERMISSION_DENIED" or is
+              empty, you do NOT have enough information to diagnose the failure.
+              Skip straight to creating a GitHub issue (see step 2 below).
+            - Do NOT spend time exploring the codebase trying to guess the root
+              cause when logs are unavailable.
             Your task:
-            1. Analyze the error logs to identify the root cause
-            2. Determine which dbt model(s) or configuration caused the failure
-            3. Create a fix by modifying the appropriate files
-            4. Create a new branch named fix/cloud-run-${{ github.run_id }}
-            5. Commit your changes with a descriptive message
-            6. Create a PR with:
-               - Summary of the failure and root cause
-               - What was changed and why
-               - How to verify the fix
-            Focus on the most likely cause: SQL errors, schema changes, source
-            freshness issues, or configuration problems. If you cannot determine
-            a code fix (e.g., infrastructure issue), create an issue instead of a PR.
+            1. If dbt error logs ARE available, analyze them to identify the root
+               cause, determine which model(s) or configuration caused the failure,
+               create a fix, and open a PR:
+               - Branch name: fix/cloud-run-${{ github.run_id }}
+               - PR body: summary of failure, what was changed, how to verify
+            2. If dbt error logs are NOT available (permission denied, empty, or
+               only execution metadata with no dbt output), create a GitHub issue
+               immediately using `gh issue create` with:
+               - Title: "Cloud Run dbt build failed — <execution name>"
+               - Body: the execution details you do have, a note that logs were
+                 unavailable, and a link to this workflow run:
+                 ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+               - Labels: bug
+               Then stop — do not attempt further diagnosis.

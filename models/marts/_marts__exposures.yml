@@ -11,8 +11,8 @@ exposures:
       - ref('fct_daily_station_metrics')
       - ref('fct_trips')
     owner:
-      name: Philip Oslatara
-      email: philip@example.com
+      name: Zarah Zu
+      email: zarah.zu@example.com
   - name: weekly_station_report
     description: >
       Weekly automated report on station performance, trip volume trends,
@@ -23,5 +23,5 @@ exposures:
       - ref('dim_stations')
       - ref('fct_daily_station_metrics')
     owner:
-      name: Philip Oslatara
-      email: philip@example.com
+      name: Yuliia Yuen
+      email: yuliia.yuen@example.com

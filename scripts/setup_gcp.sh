@@ -9,8 +9,6 @@ REGION="europe-west4"
 REPO_OWNER="pgoslatara"
 REPO_NAME="dbt-ai"
 
-echo "=== Creating GCP project ==="
-gcloud projects create "${PROJECT_ID}" --name="dbt-ai Demo" || echo "Project already exists"
 gcloud config set project "${PROJECT_ID}"
 
 echo "=== Enabling required APIs ==="

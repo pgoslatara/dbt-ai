@@ -3,7 +3,7 @@ name = "dbt-ai"
 version = "0.1.0"
 description = "AI-powered dbt project for bike-share analytics"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.13,<3.14"
 dependencies = [
     "dbt-bigquery",
 ]
@@ -12,7 +12,6 @@ dependencies = [
 dev = [
     "dbt-bouncer",
     "prek",
-    "pytest",
     "ruff",
     "rumdl",
     "shandy-sqlfmt[jinjafmt]",

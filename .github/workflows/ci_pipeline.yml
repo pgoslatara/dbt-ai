@@ -17,7 +17,6 @@ env:
 jobs:
   ci:
     name: CI
-    if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     permissions:
       contents: read

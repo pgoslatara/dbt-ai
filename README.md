@@ -99,13 +99,41 @@ This creates the project, enables APIs, sets up a service account with Workload 
 
 #### Required GitHub Secrets
 
+Configure these under **Settings → Secrets and variables → Actions**:
+
 | Secret | Description |
 |--------|-------------|
 | `CLAUDE_CODE_OAUTH_TOKEN` | OAuth token for Claude Code GitHub Actions (authenticates all AI workflows). Generate with `claude setup-token` — requires a Claude Pro or Max subscription. |
 | `GCP_PROJECT_ID` | GCP project ID |
 | `GCP_SERVICE_ACCOUNT` | Service account email for CI/CD |
 | `GCP_WORKLOAD_IDENTITY_PROVIDER` | Workload Identity Federation provider resource name |
-| `PAT_GITHUB` | GitHub Personal Access Token with `repo` and `workflow` scopes, used for cross-workflow triggers |
+| `PAT_GITHUB` | GitHub Personal Access Token with `repo` and `workflow` scopes, used for cross-workflow triggers and PR comments |
+
+#### Required Dependabot Secrets
+
+Dependabot PRs cannot access Actions secrets by default. Configure the same secrets under **Settings → Secrets and variables → Dependabot** so CI and AI PR Review run on dependency bump PRs:
+
+| Secret | Description |
+|--------|-------------|
+| `CLAUDE_CODE_OAUTH_TOKEN` | Same value as the Actions secret above |
+| `GCP_PROJECT_ID` | Same value as the Actions secret above |
+| `GCP_SERVICE_ACCOUNT` | Same value as the Actions secret above |
+| `GCP_WORKLOAD_IDENTITY_PROVIDER` | Same value as the Actions secret above |
+| `PAT_GITHUB` | Same value as the Actions secret above |
+
+To set all Dependabot secrets at once (requires `gcloud` auth and `PAT_GITHUB` in your environment):
+
+```bash
+GCP_PROJECT_ID=$(gcloud config get-value project)
+PROJECT_NUMBER=$(gcloud projects describe "${GCP_PROJECT_ID}" --format="value(projectNumber)")
+
+gh secret set PAT_GITHUB              --app dependabot --body "$PAT_GITHUB"
+gh secret set GCP_PROJECT_ID         --app dependabot --body "$GCP_PROJECT_ID"
+gh secret set GCP_SERVICE_ACCOUNT    --app dependabot --body "github-actions@${GCP_PROJECT_ID}.iam.gserviceaccount.com"
+gh secret set GCP_WORKLOAD_IDENTITY_PROVIDER --app dependabot \
+  --body "projects/${PROJECT_NUMBER}/locations/global/workloadIdentityPools/github-pool/providers/github-provider"
+gh secret set CLAUDE_CODE_OAUTH_TOKEN --app dependabot --body "$CLAUDE_CODE_OAUTH_TOKEN"
+```
 
 ### Installation
 

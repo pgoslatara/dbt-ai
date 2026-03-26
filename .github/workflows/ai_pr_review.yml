@@ -15,7 +15,6 @@ concurrency:
 jobs:
   review:
     name: AI PR Review
-    if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -111,7 +110,7 @@ jobs:
         if: always()
         env:
           BASE_REF: ${{ github.event.pull_request.base.ref }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PAT_GITHUB }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |-
           COMMENT_FILE="/tmp/ai-pr-review-comment.md"

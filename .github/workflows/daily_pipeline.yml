@@ -28,11 +28,14 @@ jobs:
       - name: Execute Cloud Run Job
         id: execute
         run: |
-          # Execute and capture the execution name from the output
+          # Execute the Cloud Run job and wait for completion.
+          # Capture exit code separately so a job failure doesn't skip
+          # the status-check steps below.
+          EXIT_CODE=0
           gcloud run jobs execute dbt-ai-build \
             --region="${{ env.REGION }}" \
             --wait \
-            2>&1 | tee /tmp/execution_output.txt || true
+            2>&1 | tee /tmp/execution_output.txt || EXIT_CODE=$?
 
           # Extract execution name from the latest execution
           EXEC_NAME=$(gcloud run jobs executions list \
@@ -43,14 +46,16 @@ jobs:
             --format="value(metadata.name)")
           echo "execution_name=$EXEC_NAME" >> "$GITHUB_OUTPUT"
 
-          # Check execution status
-          STATUS=$(gcloud run jobs executions describe "$EXEC_NAME" \
+          # Check the execution's failed task count rather than the
+          # condition type, which is "Completed" for both success and
+          # failure.
+          FAILED_COUNT=$(gcloud run jobs executions describe "$EXEC_NAME" \
             --region="${{ env.REGION }}" \
-            --format="value(status.conditions[0].type)" \
-            2>/dev/null) || STATUS="Failed"
-          echo "status=$STATUS" >> "$GITHUB_OUTPUT"
-          if [ "$STATUS" != "Completed" ]; then
-            echo "Cloud Run Job execution failed: $STATUS"
+            --format="value(status.failedCount)" \
+            2>/dev/null) || FAILED_COUNT="unknown"
+          echo "failed_count=$FAILED_COUNT" >> "$GITHUB_OUTPUT"
+          if [ "$EXIT_CODE" -ne 0 ] || [ "${FAILED_COUNT:-0}" != "0" ]; then
+            echo "Cloud Run Job execution failed (exit_code=$EXIT_CODE, failed_count=$FAILED_COUNT)"
             exit 1
           fi
       - name: Trigger fix workflow on failure

@@ -91,6 +91,7 @@ This creates the project, enables APIs, sets up a service account with Workload 
 
 | Secret | Description |
 |--------|-------------|
+| `CLAUDE_CODE_OAUTH_TOKEN` | OAuth token for Claude Code GitHub Actions (authenticates all AI workflows). Generate with `claude setup-token` — requires a Claude Pro or Max subscription. |
 | `GCP_PROJECT_ID` | GCP project ID |
 | `GCP_SERVICE_ACCOUNT` | Service account email for CI/CD |
 | `GCP_WORKLOAD_IDENTITY_PROVIDER` | Workload Identity Federation provider resource name |

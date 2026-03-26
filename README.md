@@ -37,18 +37,18 @@ User-initiated shortcuts that generate or modify artefacts. Stored in `.claude/c
 |---------|-------------|
 | `/add-tests <model>` | Add comprehensive tests to a model |
 | `/document-model <model>` | Add documentation to a model |
+| `/explain-model <model>` | Explain a model (invokes `dbt-explain-model` skill) |
 | `/generate-exposure <description>` | Generate an exposure from a plain-English description |
 | `/generate-staging-model <source.table>` | Generate a staging model from a source |
 | `/generate-unit-tests <model>` | Generate dbt unit tests for computed columns |
 | `/generate-verified-model <model>` | Generate a manifest-validated model from a description |
+| `/impact-analysis <model>` | Analyse downstream dependencies and risk-assess a model change |
+| `/review-sql` | Review SQL for BigQuery performance anti-patterns |
+| `/suggest-tests <model>` | Suggest missing tests for a model |
 
-### Claude PR Review
+### AI PR Review
 
 Every PR is automatically reviewed by Claude as a senior dbt/analytics engineer, checking SQL style, naming conventions, test coverage, and business logic correctness.
-
-### AI PR Descriptions
-
-PRs automatically receive AI-generated descriptions that summarise changes in business-friendly language, including dbt model changes and downstream impact.
 
 ### Agentic Workflows
 
@@ -128,8 +128,7 @@ make format     # Format SQL, Python, YAML
 | CI Pipeline | PR to main | Full build, test, lint cycle with ephemeral BigQuery dataset |
 | CD Pipeline | Push to main | Build Docker image, push to Artifact Registry, deploy to Cloud Run |
 | Daily Pipeline | Cron (06:00 UTC) | Production `dbt build` |
-| Claude PR Review | PR open/sync | AI code review |
-| AI PR Description | PR open | Auto-generated PR description |
+| AI PR Review | PR open/sync | AI code review |
 | Auto-Document Columns | PR with SQL changes | Generate missing column descriptions and commit to branch |
 | Real-Time Cost Estimation | PR with SQL changes | BigQuery dry-run cost analysis with optimisation recommendations |
 | Fix CI Failure | CI Pipeline failure | Analyse failure logs and comment fix suggestions on PR |

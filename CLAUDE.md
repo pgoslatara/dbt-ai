@@ -69,11 +69,14 @@ Slash commands are user-initiated shortcuts that generate or modify artifacts. L
 | `/add-tests <model>` | Add comprehensive tests to a model |
 | `/document-model <model>` | Add documentation to a model |
 | `/explain-model <model>` | Explain a model (invokes `dbt-explain-model` skill) |
+| `/fix-precommit` | Fix all pre-commit hook failures |
 | `/generate-exposure <description>` | Generate an exposure from a plain-English description |
 | `/generate-staging-model <source.table>` | Generate a staging model from a source |
 | `/generate-unit-tests <model>` | Generate dbt unit tests for computed columns |
 | `/generate-verified-model <model>` | Generate a manifest-validated model from a description |
 | `/impact-analysis <model>` | Analyze downstream impact (invokes `dbt-impact-analysis` skill) |
+| `/rebase` | Rebase the current branch onto `main` |
+| `/resolve-merge-conflicts` | Resolve all merge conflicts in the working tree |
 | `/review-sql` | Review SQL for BigQuery performance (invokes `dbt-review-sql` skill) |
 | `/suggest-tests <model>` | Suggest missing tests (invokes `dbt-suggest-tests` skill) |
 

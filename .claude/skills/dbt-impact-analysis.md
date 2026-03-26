@@ -1,6 +1,6 @@
 ---
 name: dbt-impact-analysis
-description: Analyze the downstream impact of changing a dbt model. Use when asked about impact, downstream dependencies, what would break, or what models consume a given model.
+description: Analyse the downstream impact of changing a dbt model. Use when asked about impact, downstream dependencies, what would break, or what models consume a given model.
 ---
 
 # dbt-impact-analysis

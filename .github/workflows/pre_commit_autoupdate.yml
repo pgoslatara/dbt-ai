@@ -15,15 +15,15 @@ jobs:
       pull-requests: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Install uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v7
       - name: Setup Python
         run: uv python install
       - name: Run pre-commit autoupdate
         run: uvx pre-commit autoupdate
       - name: Create pull request
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           branch: chore/pre-commit-autoupdate
           commit-message: 'chore: update pre-commit hook versions'

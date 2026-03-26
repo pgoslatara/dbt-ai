@@ -23,7 +23,7 @@ jobs:
       pull-requests: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Analyze PR
@@ -110,7 +110,7 @@ jobs:
         if: always()
         env:
           BASE_REF: ${{ github.event.pull_request.base.ref }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PAT_GITHUB }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |-
           COMMENT_FILE="/tmp/ai-pr-review-comment.md"

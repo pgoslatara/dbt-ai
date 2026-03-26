@@ -19,6 +19,9 @@ test-paths:
 
 models:
   dbt_ai:
+    +persist_docs:
+      columns: true
+      relation: true
     intermediate:
       +materialized: view
       +schema: intermediate

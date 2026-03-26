@@ -79,7 +79,7 @@ Slash commands are user-initiated shortcuts that generate or modify artifacts. L
 
 ## dbt MCP Server
 
-The [dbt MCP server](https://github.com/dbt-labs/dbt-mcp) (`dbt-mcp`) is configured in `.claude/settings.local.json` and provides tools for running dbt CLI commands, exploring model metadata and lineage, and querying the semantic layer. Use it to compile, build, and test models rather than shelling out to `dbt` directly.
+The [dbt MCP server](https://github.com/dbt-labs/dbt-mcp) (`dbt-mcp`) is configured in `.mcp.json` and provides tools for running dbt CLI commands, exploring model metadata and lineage, and querying the semantic layer. Use it to compile, build, and test models rather than shelling out to `dbt` directly.
 
 ## GCP Interaction
 

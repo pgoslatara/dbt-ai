@@ -1,14 +1,4 @@
 {
-  "mcpServers": {
-    "dbt": {
-      "command": "uvx",
-      "args": ["dbt-mcp"],
-      "env": {
-        "DBT_PATH": ".venv/bin/dbt",
-        "DBT_PROJECT_DIR": "."
-      }
-    }
-  },
   "hooks": {
     "PostToolUse": [
       {

@@ -1,0 +1,26 @@
+---
+version: 2
+
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    groups:
+      github-actions:
+        patterns:
+          - '*'
+    labels:
+      - dependencies
+    schedule:
+      day: monday
+      interval: weekly
+  - package-ecosystem: pip
+    directory: /
+    groups:
+      python-packages:
+        patterns:
+          - '*'
+    labels:
+      - dependencies
+    schedule:
+      day: monday
+      interval: weekly

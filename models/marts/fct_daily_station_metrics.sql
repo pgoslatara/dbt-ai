@@ -21,6 +21,11 @@ with
             round(avg(duration_minutes), 2) as avg_trip_duration_minutes,
             city,
             cast(started_at as date) as metric_date,
+            cast(
+                counti(
+                    extract(hour from started_at) between 7 and 9 or extract(hour from started_at) between 17 and 19
+                ) as int64
+            ) as peak_hour_trips,
             cast(count(*) as int64) as total_trips
         from trips
         group by start_station_id, city, cast(started_at as date)

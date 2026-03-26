@@ -7,6 +7,7 @@ on:
       - models/**/*.sql
 
 env:
+  DBT_DATASET: cost_estimation_${{ github.event.number }}
   GCP_PROJECT: ${{ secrets.GCP_PROJECT_ID }}
 
 jobs:

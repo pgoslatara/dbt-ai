@@ -15,7 +15,6 @@ manifest_checks:
     include: ^models/staging
     model_name_pattern: ^stg_
   - name: check_source_description_populated
-  - name: check_source_freshness_populated
   - name: check_source_loader_populated
 
 run_results_checks:

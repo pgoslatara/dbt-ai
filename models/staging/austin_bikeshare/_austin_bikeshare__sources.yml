@@ -2,6 +2,8 @@
 sources:
   - name: austin_bikeshare
     database: bigquery-public-data
+    # This public dataset is no longer updated by Google. Latest data:
+    # bikeshare_stations: 2022-03-04, bikeshare_trips: 2024-06-30.
     description: Austin B-cycle bikeshare public dataset
     loader: bigquery_public_datasets
     schema: austin_bikeshare
@@ -11,26 +13,8 @@ sources:
         columns:
           - name: station_id
             description: Unique identifier for the station
-        config:
-          freshness:
-            warn_after:
-              count: 365
-              period: day
-            error_after:
-              count: 3650
-              period: day
-          loaded_at_field: modified_date
       - name: bikeshare_trips
         description: Individual trip records for Austin B-cycle bikeshare
         columns:
           - name: trip_id
             description: Unique identifier for the trip
-        config:
-          freshness:
-            warn_after:
-              count: 365
-              period: day
-            error_after:
-              count: 3650
-              period: day
-          loaded_at_field: start_time

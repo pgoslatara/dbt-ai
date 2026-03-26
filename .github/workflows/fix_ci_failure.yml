@@ -27,11 +27,19 @@ jobs:
         id: pr
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
           HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
         run: |
+          # Try commit SHA first
           PR_NUMBER=$(gh api \
             "repos/${{ github.repository }}/commits/${HEAD_SHA}/pulls" \
-            --jq '.[0].number // empty')
+            --jq '.[0].number // empty' 2>/dev/null || true)
+
+          # Fall back to branch name lookup (handles force pushes)
+          if [ -z "$PR_NUMBER" ]; then
+            PR_NUMBER=$(gh pr list --head "$HEAD_BRANCH" --json number \
+              --jq '.[0].number // empty' 2>/dev/null || true)
+          fi
           if [ -z "$PR_NUMBER" ]; then
             echo "No PR found for this commit."
             exit 0

@@ -100,8 +100,38 @@ jobs:
             head -500 /tmp/full_context.txt
             echo "LOGS_EOF"
           } >> "$GITHUB_ENV"
+      - name: Create issue (logs unavailable)
+        if: steps.resolve.outputs.execution_name && steps.logs.outputs.logs_available == 'false'
+        id: create_issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EXEC_NAME: ${{ steps.resolve.outputs.execution_name }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh issue create \
+            --title "Cloud Run dbt build failed — $EXEC_NAME" \
+            --body "$(cat <<ISSUE_EOF
+          ## Cloud Run Job Failure
+          **Execution:** \`$EXEC_NAME\`
+          **Workflow run:** $RUN_URL
+
+          ### Execution Details
+          \`\`\`
+          $(head -100 /tmp/execution_details.txt)
+          \`\`\`
+
+          ### Note
+          Cloud Run logs were unavailable (PERMISSION_DENIED), so the root cause
+          could not be determined automatically. Check the
+          [Cloud Run logs console](https://console.cloud.google.com/run/jobs/details/${{ env.REGION }}/dbt-ai-build/executions?project=${{ env.GCP_PROJECT }})
+          for details.
+          ISSUE_EOF
+          )" \
+            --label "bug"
+          echo "issue_created=true" >> "$GITHUB_OUTPUT"
       - name: Create fix with Claude
-        if: steps.resolve.outputs.execution_name
+        if: steps.resolve.outputs.execution_name && steps.logs.outputs.logs_available == 'true'
+        id: claude_fix
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
@@ -110,23 +140,43 @@ jobs:
           prompt: |-
             A Cloud Run Job execution of our dbt project has failed.
             Execution: ${{ steps.resolve.outputs.execution_name }}
-            Logs available: ${{ steps.logs.outputs.logs_available }}
             Here are the execution details and logs:
             ${{ env.CLOUD_RUN_LOGS }}
-            Your task depends on whether logs are available:
-            IF "Logs available" above is "true":
+            Your task:
             1. Analyze the dbt error logs to identify the root cause
             2. Determine which model(s) or configuration caused the failure
             3. Create a fix by modifying the appropriate files
             4. Open a PR from a new branch named fix/cloud-run-${{ github.run_id }}
                with a summary of the failure, what was changed, and how to verify
             5. If you cannot determine a code fix (e.g., infrastructure or
-               permissions issue), fall through to the issue-creation path below
-            IF "Logs available" above is "false", OR you cannot determine a code fix:
-            1. Run `gh issue create` with:
-               - Title: "Cloud Run dbt build failed — ${{ steps.resolve.outputs.execution_name }}"
-               - Body: include the execution details, the error message from the
-                 logs (if any), and a link to this workflow run:
-                 ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-               - Labels: bug
-            2. Then stop — do not attempt further diagnosis
+               permissions issue), create a GitHub issue using `gh issue create`
+               with the title, error details, and a link to this workflow run:
+               ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      - name: Fallback issue (Claude did not create PR or issue)
+        if: >-
+          steps.resolve.outputs.execution_name
+          && steps.logs.outputs.logs_available == 'true'
+          && failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EXEC_NAME: ${{ steps.resolve.outputs.execution_name }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |-
+          gh issue create \
+            --title "Cloud Run dbt build failed — $EXEC_NAME" \
+            --body "$(cat <<ISSUE_EOF
+          ## Cloud Run Job Failure
+          **Execution:** \`$EXEC_NAME\`
+          **Workflow run:** $RUN_URL
+
+          ### Execution Logs
+          \`\`\`
+          $(head -200 /tmp/execution_logs.txt)
+          \`\`\`
+
+          ### Note
+          Claude Code was unable to create a fix automatically. See the workflow
+          run for details.
+          ISSUE_EOF
+          )" \
+            --label "bug"

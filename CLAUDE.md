@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Bike-share analytics dbt project using two public BigQuery datasets (NYC Citi Bike and Austin Bikeshare). Demonstrates AI-powered dbt workflows for the Amsterdam dbt Meetup.
+Bike-share analytics dbt project using two public BigQuery datasets (NYC Citi Bike and Austin Bikeshare). Demonstrates AI-powered dbt workflows for the NL dbt Meetup.
 
 ## Naming Conventions
 
@@ -15,14 +15,13 @@ Bike-share analytics dbt project using two public BigQuery datasets (NYC Citi Bi
 
 ## SQL Style
 
-- Uppercase SQL keywords: `SELECT`, `FROM`, `WHERE`, `JOIN`, `GROUP BY`, etc.
 - Lowercase for column and table names using `snake_case`
-- One column per line in `SELECT` statements
+- One column per line in `select` statements
 - Always alias tables in joins
 - Use CTEs over nested subqueries
-- CTE pattern: `source` → `renamed` → `SELECT` for staging models
+- CTE pattern: `source` → `renamed` → `select` for staging models
 
-## Materializations
+## Materialisations
 
 - Staging: `view`
 - Intermediate: `view`
@@ -32,8 +31,8 @@ Bike-share analytics dbt project using two public BigQuery datasets (NYC Citi Bi
 
 - Every model must have a YAML file with descriptions
 - Every model must have at least one test
-- Use `dbt_expectations` for range and pattern checks
-- Use `dbt_utils` for generic utility macros
+- Use `dbt_expectations` for range and pattern checks, see ./dbt_packages/dbt_expectations/README.md
+- Use `dbt_utils` for generic utility macros, see ./dbt_packages/dbt_utils/README.md
 - Use dbt unit tests for computed column logic (e.g., `is_round_trip`, `is_weekend`)
 - Define exposures in `models/marts/_marts__exposures.yml` for downstream consumers
 
@@ -41,14 +40,9 @@ Bike-share analytics dbt project using two public BigQuery datasets (NYC Citi Bi
 
 ```bash
 make setup      # Install deps, dbt packages, prek hooks
-make run        # dbt build
-make test       # dbt test + pytest
 make lint       # Run all pre-commit hooks
 make format     # Format SQL, Python, YAML
-make freshness  # Check source freshness
-make docs       # Generate and serve dbt docs
 make clean      # Remove build artifacts
-make slides     # Build presentation HTML
 ```
 
 ## Skills
@@ -102,3 +96,10 @@ models/
 ├── intermediate/     # Cross-source unions and aggregations (views)
 └── marts/            # Business-ready dimensions and facts (tables)
 ```
+
+## Miscellaneous
+
+- Follow [dbt's guide on how to structure dbt projects](https://docs.getdbt.com/best-practices/how-we-structure/1-guide-overview).
+- Prior to every commit, run `uv run prek --all-files`.
+- When running dbt, use the `--select` argument to run only necessary models.
+- Do not disable dbt tests or reduce their severity to `warn`.

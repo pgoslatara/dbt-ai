@@ -35,9 +35,3 @@ service_account.json
 # OS
 .DS_Store
 Thumbs.db
-
-# Presentation
-presentation/dist/
-
-# Node (for Marp)
-node_modules/

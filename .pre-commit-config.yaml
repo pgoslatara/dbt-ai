@@ -14,6 +14,14 @@ repos:
       - id: trailing-whitespace
   - repo: local
     hooks:
+      - id: dbt-parse
+        name: dbt parse
+        entry: uv run dbt parse
+        language: system
+        pass_filenames: false
+        types:
+          - yaml
+          - sql
       - id: dbt-bouncer
         name: dbt-bouncer
         entry: uv run dbt-bouncer --only manifest_checks

@@ -41,6 +41,8 @@ jobs:
         run: uv run dbt deps
       - name: Parse dbt project
         run: uv run dbt parse --target ci
+      - name: Run pre-commit hooks
+        run: uv run prek run -a
       - name: Run dbt-bouncer manifest checks
         run: uv run dbt-bouncer --only manifest_checks
       - name: Seed data
@@ -49,12 +51,6 @@ jobs:
         run: uv run dbt build --fail-fast --full-refresh --target ci
       - name: Run dbt-bouncer run results checks
         run: uv run dbt-bouncer --only run_results_checks
-      - name: Check source freshness
-        run: uv run dbt source freshness --target ci
-      - name: Run pre-commit hooks
-        run: uv run prek run -a
-      - name: Run pytest
-        run: uv run pytest --no-header -q || [ $? -eq 5 ]
       - name: Cleanup CI dataset
         if: always()
         run: |-

@@ -22,7 +22,7 @@ with
             city,
             cast(started_at as date) as metric_date,
             cast(
-                countif(
+                counti(
                     extract(hour from started_at) between 7 and 9 or extract(hour from started_at) between 17 and 19
                 ) as int64
             ) as peak_hour_trips,

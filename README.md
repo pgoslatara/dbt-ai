@@ -77,9 +77,7 @@ A weekly GitHub Actions workflow queries production BigQuery data for statistica
 
 ## Presentation
 
-The slide deck for the Amsterdam dbt Meetup is available on Google Slides (Xebia template):
-
-**[AI-Powered dbt — Amsterdam dbt Meetup (26 March 2026)](https://docs.google.com/presentation/d/1jWjz7QxmWajZzxfElCxzrX_sCVKndjzLZxRqE1Cq22w/edit)**
+[Slide deck for NL dbt meetup: 15th Edition](https://docs.google.com/presentation/d/1YsPOhB1FHJIsEAkF_QHNQZlPgoeRge5zSVh9AfenYds/edit?usp=sharing)
 
 ## Getting Started
 

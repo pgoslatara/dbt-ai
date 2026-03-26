@@ -73,12 +73,19 @@ jobs:
             --format=yaml > /tmp/execution_details.txt 2>&1 || true
 
           # Get logs from Cloud Logging
+          LOGS_AVAILABLE=true
           gcloud logging read \
             "resource.type=cloud_run_job AND resource.labels.job_name=dbt-ai-build AND labels.\"run.googleapis.com/execution_name\"=$EXEC_NAME" \
             --limit=200 \
             --format="table(timestamp,textPayload)" \
             --project="${{ env.GCP_PROJECT }}" \
-            > /tmp/execution_logs.txt 2>&1 || true
+            > /tmp/execution_logs.txt 2>&1 || LOGS_AVAILABLE=false
+
+          # Also mark as unavailable if gcloud returned an error message instead of logs
+          if grep -q "PERMISSION_DENIED" /tmp/execution_logs.txt 2>/dev/null; then
+            LOGS_AVAILABLE=false
+          fi
+          echo "logs_available=$LOGS_AVAILABLE" >> "$GITHUB_OUTPUT"
           {
             echo "=== Execution Details ==="
             cat /tmp/execution_details.txt
@@ -103,26 +110,23 @@ jobs:
           prompt: |-
             A Cloud Run Job execution of our dbt project has failed.
             Execution: ${{ steps.resolve.outputs.execution_name }}
+            Logs available: ${{ steps.logs.outputs.logs_available }}
             Here are the execution details and logs:
             ${{ env.CLOUD_RUN_LOGS }}
-            IMPORTANT — check the logs above first:
-            - If the "Execution Logs" section contains "PERMISSION_DENIED" or is
-              empty, you do NOT have enough information to diagnose the failure.
-              Skip straight to creating a GitHub issue (see step 2 below).
-            - Do NOT spend time exploring the codebase trying to guess the root
-              cause when logs are unavailable.
-            Your task:
-            1. If dbt error logs ARE available, analyze them to identify the root
-               cause, determine which model(s) or configuration caused the failure,
-               create a fix, and open a PR:
-               - Branch name: fix/cloud-run-${{ github.run_id }}
-               - PR body: summary of failure, what was changed, how to verify
-            2. If dbt error logs are NOT available (permission denied, empty, or
-               only execution metadata with no dbt output), create a GitHub issue
-               immediately using `gh issue create` with:
-               - Title: "Cloud Run dbt build failed — <execution name>"
-               - Body: the execution details you do have, a note that logs were
-                 unavailable, and a link to this workflow run:
+            Your task depends on whether logs are available:
+            IF "Logs available" above is "true":
+            1. Analyze the dbt error logs to identify the root cause
+            2. Determine which model(s) or configuration caused the failure
+            3. Create a fix by modifying the appropriate files
+            4. Open a PR from a new branch named fix/cloud-run-${{ github.run_id }}
+               with a summary of the failure, what was changed, and how to verify
+            5. If you cannot determine a code fix (e.g., infrastructure or
+               permissions issue), fall through to the issue-creation path below
+            IF "Logs available" above is "false", OR you cannot determine a code fix:
+            1. Run `gh issue create` with:
+               - Title: "Cloud Run dbt build failed — ${{ steps.resolve.outputs.execution_name }}"
+               - Body: include the execution details, the error message from the
+                 logs (if any), and a link to this workflow run:
                  ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
                - Labels: bug
-               Then stop — do not attempt further diagnosis.
+            2. Then stop — do not attempt further diagnosis

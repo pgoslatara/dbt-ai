@@ -17,6 +17,7 @@ gcloud services enable \
     bigquery.googleapis.com \
     iam.googleapis.com \
     iamcredentials.googleapis.com \
+    logging.googleapis.com \
     run.googleapis.com
 
 echo "=== Creating Artifact Registry repository ==="

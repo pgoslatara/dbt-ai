@@ -61,17 +61,6 @@ jobs:
           fi
           echo "execution_name=$EXEC_NAME" >> "$GITHUB_OUTPUT"
           echo "Found failed execution: $EXEC_NAME"
-      - name: Grant Cloud Logging read access
-        if: steps.resolve.outputs.execution_name
-        run: |
-          # Ensure the service account can read Cloud Logging entries.
-          # This is idempotent — re-adding an existing binding is a no-op.
-          gcloud projects add-iam-policy-binding "${{ env.GCP_PROJECT }}" \
-            --member="serviceAccount:${{ secrets.GCP_SERVICE_ACCOUNT }}" \
-            --role="roles/logging.viewer" \
-            --condition=None \
-            --quiet \
-            2>/dev/null || echo "::warning::Could not grant logging.viewer — logs may be unavailable"
       - name: Pull Cloud Run logs
         if: steps.resolve.outputs.execution_name
         id: logs

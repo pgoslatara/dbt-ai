@@ -1,10 +1,4 @@
 {
-  "mcpServers": {
-    "dbt": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-dbt", "--target-dir", "target"]
-    }
-  },
   "hooks": {
     "PostToolUse": [
       {

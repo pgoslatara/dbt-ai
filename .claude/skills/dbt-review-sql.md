@@ -21,5 +21,5 @@ Review the SQL in the file at `$ARGUMENTS` (if provided), or the current file if
    - Clustering opportunities on high-cardinality filter columns.
    - Appropriate use of CAST vs implicit type coercion.
    - Efficient date/timestamp operations.
-4. Present findings as a categorised list (Critical, Warning, Suggestion) with specific line references and recommended fixes.
+4. Present findings as a categorised list using project severity labels — 🔴 **Issue** (must fix), 🟡 **Suggestion** (recommended improvement) — with specific line references and recommended fixes. If there are no issues, say ✅ **All clear** rather than inventing problems.
 5. If the SQL follows best practices, say so — don't invent issues.

@@ -54,7 +54,7 @@ Skills encode *how Claude thinks* about a class of problem — multi-step analyt
 | Skill | Description |
 |-------|-------------|
 | `dbt-explain-model` | Explain a model's purpose, lineage, transformations, and data quality |
-| `dbt-impact-analysis` | Analyze downstream dependencies and risk-assess a model change |
+| `dbt-impact-analysis` | Analyse downstream dependencies and risk-assess a model change |
 | `dbt-review-sql` | Review SQL for BigQuery performance anti-patterns |
 | `dbt-suggest-tests` | Suggest missing tests for a model |
 

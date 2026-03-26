@@ -47,14 +47,14 @@ make clean      # Remove build artifacts
 
 ## Skills
 
-Skills encode *how Claude thinks* about a class of problem — multi-step analytical protocols reusable across projects. Lives in `~/.claude/skills/`.
+Skills encode *how Claude thinks* about a class of problem — multi-step analytical protocols. Lives in `.claude/skills/`.
 
-**Use a skill when:** the task is a multi-step analytical or behavioral protocol that should be reusable across projects and can be triggered naturally or via slash command.
+**Use a skill when:** the task is a multi-step analytical or behavioural protocol that can be triggered naturally or via slash command.
 
 | Skill | Description |
 |-------|-------------|
 | `dbt-explain-model` | Explain a model's purpose, lineage, transformations, and data quality |
-| `dbt-impact-analysis` | Analyze downstream dependencies and risk-assess a model change |
+| `dbt-impact-analysis` | Analyse downstream dependencies and risk-assess a model change |
 | `dbt-review-sql` | Review SQL for BigQuery performance anti-patterns |
 | `dbt-suggest-tests` | Suggest missing tests for a model |
 

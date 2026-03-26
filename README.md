@@ -18,19 +18,29 @@ The [`CLAUDE.md`](CLAUDE.md) file contains project-specific instructions that Cl
 
 Purpose-built AI skills from the [dbt-agent-skills](https://github.com/dbt-labs/dbt-agent-skills) plugin, providing dbt-specific Claude Code capabilities.
 
+### Skills
+
+Multi-step analytical protocols that encode how Claude approaches a class of problem. Stored in `.claude/skills/` and invokable naturally or via slash command.
+
+| Skill | Slash command | Description |
+|-------|---------------|-------------|
+| `dbt-explain-model` | `/explain-model <model>` | Explain a model's purpose, lineage, transformations, and data quality |
+| `dbt-impact-analysis` | `/impact-analysis <model>` | Analyse downstream dependencies and risk-assess a model change |
+| `dbt-review-sql` | `/review-sql` | Review SQL for BigQuery performance anti-patterns |
+| `dbt-suggest-tests` | `/suggest-tests <model>` | Suggest missing tests for a model |
+
 ### Custom Slash Commands
+
+User-initiated shortcuts that generate or modify artefacts. Stored in `.claude/commands/`.
 
 | Command | Description |
 |---------|-------------|
 | `/add-tests <model>` | Add comprehensive tests to a model |
 | `/document-model <model>` | Add documentation to a model |
-| `/explain-model <model>` | Explain a model's purpose, lineage, and data quality |
 | `/generate-exposure <description>` | Generate an exposure from a plain-English description |
 | `/generate-staging-model <source.table>` | Generate a staging model from a source |
 | `/generate-unit-tests <model>` | Generate dbt unit tests for computed columns |
-| `/impact-analysis <model>` | Analyse downstream impact of changing a model |
-| `/review-sql` | Review SQL for BigQuery performance anti-patterns |
-| `/suggest-tests <model>` | Suggest missing tests for a model |
+| `/generate-verified-model <model>` | Generate a manifest-validated model from a description |
 
 ### Claude PR Review
 
@@ -140,6 +150,7 @@ make format     # Format SQL, Python, YAML
 ```
 .
 ├── .claude/commands/     # Custom Claude Code slash commands
+├── .claude/skills/       # Project-local Claude Code skills
 ├── .github/workflows/    # CI/CD and agentic workflows
 ├── models/
 │   ├── staging/          # Source-specific models

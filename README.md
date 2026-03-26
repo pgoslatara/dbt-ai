@@ -40,7 +40,19 @@ Every PR is automatically reviewed by Claude as a senior dbt/analytics engineer,
 
 PRs automatically receive AI-generated descriptions that summarise changes in business-friendly language, including dbt model changes and downstream impact.
 
-### Agentic Workflows (Weekly)
+### Agentic Workflows
+
+**On Pull Request**
+
+- **Fix CI Failure**: When the CI pipeline fails on a PR, Claude fetches the failed job logs, identifies the root cause (naming the specific step, model, or test), and posts a PR comment with a concrete fix suggestion and the local commands needed to verify it.
+- **Auto-Document Columns**: When SQL models are added or modified in a PR, Claude parses each changed file, generates descriptions for any undocumented columns, commits the updated YAML files to the branch, and posts a comment to let the developer know.
+- **Real-Time Cost Estimation**: When SQL models change in a PR, Claude compiles the project, runs a BigQuery dry-run for each changed model to retrieve bytes processed, and calculates estimated cost at $6.25/TB. If any model exceeds $1.00 per run, Claude flags it and analyses the SQL for missing partition filters, full table scans, or cross joins that could reduce cost.
+
+**On Cloud Run Failure**
+
+- **Fix Cloud Run Failure**: Triggered by a `repository_dispatch` webhook from Cloud Run (or manually). Claude fetches the failed execution details and logs from Cloud Logging, determines the root cause, creates a fix branch with the necessary code changes, and opens a PR summarising the failure and the fix. If the failure is an infrastructure issue rather than a code problem, it creates a GitHub issue instead.
+
+**Scheduled (Weekly)**
 
 - **Abandoned Models Detection**: Compares the dbt manifest against BigQuery datasets to find orphaned tables, generates cleanup SQL, and creates a GitHub issue.
 - **Codebase Review**: AI analyses the entire codebase for dbt best practice violations and creates a categorised GitHub issue with findings.
@@ -48,8 +60,6 @@ PRs automatically receive AI-generated descriptions that summarise changes in bu
 ### Data Quality Monitoring
 
 A weekly GitHub Actions workflow queries production BigQuery data for statistical anomalies (trip volume spikes, duration outliers, data freshness issues) and creates a GitHub issue with AI-analysed findings.
-
-TODO: add Cloud Run workflow that triggers on webhook and analyses logs, add CI failure workflow and workflow that auto-documents columns and cost estimation
 
 ## Getting Started
 
@@ -70,8 +80,6 @@ chmod +x scripts/setup_gcp.sh
 ```
 
 This creates the project, enables APIs, sets up a service account with Workload Identity Federation (WIF) for keyless CI/CD authentication, and prints the GitHub Secrets you need to configure.
-
-TODO: Are these correct, most of this is run locally so not needed in GitHub. Also, where's the Claude OAuth token?
 
 #### Required GitHub Secrets
 
@@ -105,10 +113,12 @@ make format     # Format SQL, Python, YAML
 | Daily Pipeline | Cron (06:00 UTC) | Production `dbt build` |
 | Claude PR Review | PR open/sync | AI code review |
 | AI PR Description | PR open | Auto-generated PR description |
-| Abandoned Models | Weekly (Monday) | Detect orphaned BigQuery tables |
-| Codebase Review | Weekly (Monday) | AI best-practice audit |
+| Auto-Document Columns | PR with SQL changes | Generate missing column descriptions and commit to branch |
+| Real-Time Cost Estimation | PR with SQL changes | BigQuery dry-run cost analysis with optimisation recommendations |
 | Fix CI Failure | CI Pipeline failure | Analyse failure logs and comment fix suggestions on PR |
 | Fix Cloud Run Failure | Cloud Run Job failure / `repository_dispatch` | Analyse logs, create fix PR |
+| Abandoned Models | Weekly (Monday) | Detect orphaned BigQuery tables |
+| Codebase Review | Weekly (Monday) | AI best-practice audit |
 | Data Quality Check | Weekly (Monday) | Detect data anomalies and create issue |
 
 ## Data Sources

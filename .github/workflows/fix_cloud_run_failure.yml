@@ -135,7 +135,8 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          claude_args: --allowedTools bash computer edit read grep glob write
+          claude_args: --allowedTools Bash Computer Edit Read Grep Glob Write
+          show_full_output: true
           github_token: ${{ secrets.GITHUB_TOKEN }}
           prompt: |-
             A Cloud Run Job execution of our dbt project has failed.
@@ -152,11 +153,29 @@ jobs:
                permissions issue), create a GitHub issue using `gh issue create`
                with the title, error details, and a link to this workflow run:
                ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      - name: Check if Claude created a PR or issue
+        if: steps.resolve.outputs.execution_name && steps.logs.outputs.logs_available == 'true'
+        id: check_output
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EXEC_NAME: ${{ steps.resolve.outputs.execution_name }}
+        run: |
+          # Check if a PR was created on a fix/cloud-run-* branch
+          PR_COUNT=$(gh pr list --search "Cloud Run" --state open --json number --jq length)
+          # Check if an issue was created with this execution name
+          ISSUE_COUNT=$(gh issue list --search "$EXEC_NAME" --state open --json number --jq length)
+          if [ "$PR_COUNT" -gt 0 ] || [ "$ISSUE_COUNT" -gt 0 ]; then
+            echo "Claude created a PR or issue"
+            echo "output_created=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Claude did not create a PR or issue"
+            echo "output_created=false" >> "$GITHUB_OUTPUT"
+          fi
       - name: Fallback issue (Claude did not create PR or issue)
         if: >-
           steps.resolve.outputs.execution_name
           && steps.logs.outputs.logs_available == 'true'
-          && failure()
+          && steps.check_output.outputs.output_created == 'false'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           EXEC_NAME: ${{ steps.resolve.outputs.execution_name }}

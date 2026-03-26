@@ -77,6 +77,10 @@ Slash commands are user-initiated shortcuts that generate or modify artifacts. L
 | `/review-sql` | Review SQL for BigQuery performance (invokes `dbt-review-sql` skill) |
 | `/suggest-tests <model>` | Suggest missing tests (invokes `dbt-suggest-tests` skill) |
 
+## dbt MCP Server
+
+The [dbt MCP server](https://github.com/dbt-labs/dbt-mcp) (`dbt-mcp`) is configured in `.claude/settings.local.json` and provides tools for running dbt CLI commands, exploring model metadata and lineage, and querying the semantic layer. Use it to compile, build, and test models rather than shelling out to `dbt` directly.
+
 ## GCP Interaction
 
 All GCP interaction uses `gcloud` CLI. The project ID is configured via the `GCP_PROJECT` environment variable.

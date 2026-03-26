@@ -14,6 +14,10 @@ It uses two public BigQuery datasets (NYC Citi Bike and Austin Bikeshare) to bui
 
 The [`CLAUDE.md`](CLAUDE.md) file contains project-specific instructions that Claude follows when working with this codebase: naming conventions, SQL style rules, materialisation patterns, and testing requirements.
 
+### dbt MCP Server
+
+The [dbt MCP server](https://github.com/dbt-labs/dbt-mcp) (`dbt-mcp`) is configured in `.claude/settings.local.json`, giving Claude direct access to dbt CLI commands, model metadata, lineage, and the semantic layer — no need to shell out to `dbt` manually.
+
 ### dbt-agent-skills
 
 Purpose-built AI skills from the [dbt-agent-skills](https://github.com/dbt-labs/dbt-agent-skills) plugin, providing dbt-specific Claude Code capabilities.

@@ -1,8 +1,12 @@
 {
   "mcpServers": {
     "dbt": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-dbt", "--target-dir", "target"]
+      "command": "uvx",
+      "args": ["dbt-mcp"],
+      "env": {
+        "DBT_PATH": ".venv/bin/dbt",
+        "DBT_PROJECT_DIR": "."
+      }
     }
   },
   "hooks": {

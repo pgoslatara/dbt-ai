@@ -61,6 +61,12 @@ PRs automatically receive AI-generated descriptions that summarise changes in bu
 
 A weekly GitHub Actions workflow queries production BigQuery data for statistical anomalies (trip volume spikes, duration outliers, data freshness issues) and creates a GitHub issue with AI-analysed findings.
 
+## Presentation
+
+The slide deck for the Amsterdam dbt Meetup is available on Google Slides (Xebia template):
+
+**[AI-Powered dbt — Amsterdam dbt Meetup (26 March 2026)](https://docs.google.com/presentation/d/1jWjz7QxmWajZzxfElCxzrX_sCVKndjzLZxRqE1Cq22w/edit)**
+
 ## Getting Started
 
 ### Prerequisites

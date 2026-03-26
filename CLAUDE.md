@@ -45,19 +45,37 @@ make format     # Format SQL, Python, YAML
 make clean      # Remove build artifacts
 ```
 
+## Skills
+
+Skills encode *how Claude thinks* about a class of problem — multi-step analytical protocols reusable across projects. Lives in `~/.claude/skills/`.
+
+**Use a skill when:** the task is a multi-step analytical or behavioral protocol that should be reusable across projects and can be triggered naturally or via slash command.
+
+| Skill | Description |
+|-------|-------------|
+| `dbt-explain-model` | Explain a model's purpose, lineage, transformations, and data quality |
+| `dbt-impact-analysis` | Analyze downstream dependencies and risk-assess a model change |
+| `dbt-review-sql` | Review SQL for BigQuery performance anti-patterns |
+| `dbt-suggest-tests` | Suggest missing tests for a model |
+
 ## Custom Slash Commands
+
+Slash commands are user-initiated shortcuts that generate or modify artifacts. Lives in `.claude/commands/`.
+
+**Use a slash command when:** the task is user-initiated, needs an explicit argument, and follows a predictable, templated output pattern.
 
 | Command | Description |
 |---------|-------------|
 | `/add-tests <model>` | Add comprehensive tests to a model |
 | `/document-model <model>` | Add documentation to a model |
-| `/explain-model <model>` | Explain a model's purpose, lineage, and data quality |
+| `/explain-model <model>` | Explain a model (invokes `dbt-explain-model` skill) |
 | `/generate-exposure <description>` | Generate an exposure from a plain-English description |
 | `/generate-staging-model <source.table>` | Generate a staging model from a source |
 | `/generate-unit-tests <model>` | Generate dbt unit tests for computed columns |
-| `/impact-analysis <model>` | Analyze downstream impact of changing a model |
-| `/review-sql` | Review SQL for BigQuery performance anti-patterns |
-| `/suggest-tests <model>` | Suggest missing tests for a model |
+| `/generate-verified-model <model>` | Generate a manifest-validated model from a description |
+| `/impact-analysis <model>` | Analyze downstream impact (invokes `dbt-impact-analysis` skill) |
+| `/review-sql` | Review SQL for BigQuery performance (invokes `dbt-review-sql` skill) |
+| `/suggest-tests <model>` | Suggest missing tests (invokes `dbt-suggest-tests` skill) |
 
 ## GCP Interaction
 

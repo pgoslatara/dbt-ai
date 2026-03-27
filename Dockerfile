@@ -21,7 +21,9 @@ WORKDIR /app
 
 COPY --from=builder /app /app
 
-RUN useradd -r -m -s /usr/sbin/nologin dbt
+RUN useradd -r -m -s /usr/sbin/nologin dbt && \
+    mkdir -p /app/logs && \
+    chown dbt:dbt /app/logs
 USER dbt
 
 ENTRYPOINT ["uv", "run", "dbt"]

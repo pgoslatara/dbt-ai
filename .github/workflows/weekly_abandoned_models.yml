@@ -40,7 +40,7 @@ jobs:
       - name: Find abandoned models
         id: abandoned
         run: |
-          uv run python scripts/find_abandoned_models.py > abandoned_report.txt
+          uv run python scripts/find_abandoned_models.py | tee abandoned_report.txt
           echo "report<<EOF" >> "$GITHUB_OUTPUT"
           cat abandoned_report.txt >> "$GITHUB_OUTPUT"
           echo "EOF" >> "$GITHUB_OUTPUT"

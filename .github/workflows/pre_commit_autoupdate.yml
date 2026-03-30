@@ -25,6 +25,7 @@ jobs:
       - name: Create pull request
         uses: peter-evans/create-pull-request@v8
         with:
+          token: ${{ secrets.PAT_GITHUB }}
           branch: chore/pre-commit-autoupdate
           commit-message: 'chore: update pre-commit hook versions'
           labels: dependencies

@@ -51,7 +51,9 @@ jobs:
         run: uv run dbt build --fail-fast --full-refresh --target ci
       - name: Run dbt-bouncer run results checks
         run: uv run dbt-bouncer --only run_results_checks
-      - name: Cleanup CI dataset
+      - name: Cleanup CI datasets
         if: always()
         run: |-
-          bq rm -r -f "${{ env.GCP_PROJECT }}:${{ env.DBT_DATASET }}" || true
+          for suffix in "" "_intermediate" "_marts" "_staging"; do
+            bq rm -r -f "${{ env.GCP_PROJECT }}:${{ env.DBT_DATASET }}${suffix}" || true
+          done

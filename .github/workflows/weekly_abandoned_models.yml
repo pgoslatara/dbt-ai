@@ -6,9 +6,6 @@ on:
     - cron: 0 8 * * 1
   workflow_dispatch:
 
-env:
-  GCP_PROJECT: ${{ secrets.GCP_PROJECT_ID }}
-
 jobs:
   check:
     name: Find Abandoned Models
@@ -25,22 +22,21 @@ jobs:
         with:
           service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
           workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-      - name: Setup gcloud
-        uses: google-github-actions/setup-gcloud@v3
-        with:
-          install_components: bq
       - name: Install uv
         uses: astral-sh/setup-uv@v7
       - name: Setup Python
         run: uv python install
       - name: Install dependencies
         run: uv sync
-      - name: Parse dbt project
-        run: uv run dbt deps && uv run dbt parse --target prod
       - name: Find abandoned models
         id: abandoned
+        env:
+          GOOGLE_CLOUD_PROJECT: ${{ secrets.GCP_PROJECT_ID }}
         run: |
           uv run python scripts/find_abandoned_models.py | tee abandoned_report.txt
+          echo ""
+          echo "=== Report contents ==="
+          cat abandoned_report.txt
           echo "report<<EOF" >> "$GITHUB_OUTPUT"
           cat abandoned_report.txt >> "$GITHUB_OUTPUT"
           echo "EOF" >> "$GITHUB_OUTPUT"

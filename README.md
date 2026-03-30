@@ -151,6 +151,32 @@ make lint       # Run all pre-commit hooks
 make format     # Format SQL, Python, YAML
 ```
 
+## Scripts
+
+### Find Abandoned Models
+
+Compares the dbt manifest against BigQuery to find orphaned tables that are no longer defined in the project. Uses dbt's programmatic API and the BigQuery Python client.
+
+```bash
+# Authenticate to GCP (if not already)
+gcloud auth application-default login
+
+# Run against prod target (default)
+uv run python scripts/find_abandoned_models.py
+
+# Run against a specific target
+uv run python scripts/find_abandoned_models.py --target dev
+
+# Override the GCP project
+uv run python scripts/find_abandoned_models.py --project-id my-project
+```
+
+Operational logs go to stderr; the report goes to stdout. To save the report to a file while still seeing logs:
+
+```bash
+uv run python scripts/find_abandoned_models.py > report.txt
+```
+
 ## CI/CD
 
 | Workflow | Trigger | Description |

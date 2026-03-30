@@ -27,6 +27,8 @@ jobs:
           workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
       - name: Setup gcloud
         uses: google-github-actions/setup-gcloud@v3
+        with:
+          install_components: bq
       - name: Install uv
         uses: astral-sh/setup-uv@v7
       - name: Setup Python
@@ -38,7 +40,7 @@ jobs:
       - name: Find abandoned models
         id: abandoned
         run: |
-          uv run python scripts/find_abandoned_models.py > abandoned_report.txt 2>&1
+          uv run python scripts/find_abandoned_models.py > abandoned_report.txt
           echo "report<<EOF" >> "$GITHUB_OUTPUT"
           cat abandoned_report.txt >> "$GITHUB_OUTPUT"
           echo "EOF" >> "$GITHUB_OUTPUT"

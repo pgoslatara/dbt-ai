@@ -11,19 +11,21 @@ logging.basicConfig(level=logging.INFO, format="%(message)s", stream=sys.stdout)
 logger = logging.getLogger(__name__)
 
 
-def get_manifest_models(manifest_path: Path) -> set[str]:
-    """Extract model names from the dbt manifest."""
+def get_manifest_models(manifest_path: Path) -> tuple[set[str], set[str]]:
+    """Extract model names and datasets from the dbt manifest."""
     with manifest_path.open() as f:
         manifest = json.load(f)
 
     models = set()
+    datasets = set()
     for node in manifest.get("nodes", {}).values():
         if node["resource_type"] == "model":
             schema = node.get("schema", "")
             name = node.get("name", "")
             models.add(f"{schema}.{name}")
+            datasets.add(schema)
 
-    return models
+    return models, datasets
 
 
 def get_bigquery_tables(project_id: str, dataset: str) -> set[str]:
@@ -54,8 +56,8 @@ def main() -> None:
         logger.error("GCP_PROJECT environment variable is not set.")
         sys.exit(1)
 
-    manifest_models = get_manifest_models(manifest_path)
-    datasets = {"dbt_ai_prod", "dbt_ai_dev"}
+    manifest_models, datasets = get_manifest_models(manifest_path)
+    logger.info("Checking %d dataset(s): %s", len(datasets), ", ".join(sorted(datasets)))
 
     all_bq_tables: set[str] = set()
     for dataset in sorted(datasets):

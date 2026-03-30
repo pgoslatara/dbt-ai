@@ -37,7 +37,7 @@ def get_bigquery_tables(project_id: str, dataset: str) -> set[str]:
         )
         tables = json.loads(result.stdout) if result.stdout.strip() else []
         return {f"{dataset}.{t['tableReference']['tableId']}" for t in tables}
-    except subprocess.CalledProcessError:
+    except (subprocess.CalledProcessError, json.JSONDecodeError):
         logger.warning("Could not list tables in %s.%s", project_id, dataset)
         return set()
 

@@ -2,6 +2,7 @@
 
 import json
 import logging
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -48,12 +49,10 @@ def main() -> None:
         logger.error("manifest.json not found. Run 'dbt parse' first.")
         sys.exit(1)
 
-    project_id = subprocess.run(
-        ["gcloud", "config", "get-value", "project"],  # noqa: S607
-        capture_output=True,
-        check=True,
-        text=True,
-    ).stdout.strip()
+    project_id = os.environ.get("GCP_PROJECT")
+    if not project_id:
+        logger.error("GCP_PROJECT environment variable is not set.")
+        sys.exit(1)
 
     manifest_models = get_manifest_models(manifest_path)
     datasets = {"dbt_ai_prod", "dbt_ai_dev"}

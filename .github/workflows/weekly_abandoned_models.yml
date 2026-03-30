@@ -31,6 +31,7 @@ jobs:
       - name: Find abandoned models
         id: abandoned
         env:
+          CI: 'false'
           GOOGLE_CLOUD_PROJECT: ${{ secrets.GCP_PROJECT_ID }}
         run: |
           uv run python scripts/find_abandoned_models.py | tee abandoned_report.txt

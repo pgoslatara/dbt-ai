@@ -88,6 +88,14 @@ models:
         description: The date for these metrics
         tests:
           - not_null
+      - name: peak_hour_trips
+        data_type: INT64
+        description: Number of trips starting during peak commute hours (7-9 AM and 5-7 PM)
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
       - name: total_trips
         data_type: INT64
         description: Total number of trips for the day
@@ -196,6 +204,45 @@ unit_tests:
           metric_date: '2024-01-01'
           total_trips: 3
           avg_trip_duration_minutes: 20.0
+          peak_hour_trips: 0
+  - name: test_daily_metrics_peak_hour_trips
+    description: Trips during peak commute hours (7-9 AM and 5-7 PM) are counted correctly
+    model: fct_daily_station_metrics
+    overrides:
+      macros:
+        is_incremental: false
+    given:
+      - input: ref('int_trips_unioned')
+        rows:
+          - trip_id: t1
+            city: austin
+            duration_minutes: 10.0
+            end_station_id: s2
+            ended_at: '2024-01-01 07:10:00'
+            start_station_id: s1
+            started_at: '2024-01-01 07:00:00'
+          - trip_id: t2
+            city: austin
+            duration_minutes: 15.0
+            end_station_id: s2
+            ended_at: '2024-01-01 17:15:00'
+            start_station_id: s1
+            started_at: '2024-01-01 17:00:00'
+          - trip_id: t3
+            city: austin
+            duration_minutes: 20.0
+            end_station_id: s2
+            ended_at: '2024-01-01 12:20:00'
+            start_station_id: s1
+            started_at: '2024-01-01 12:00:00'
+    expect:
+      rows:
+        - station_id: s1
+          city: austin
+          metric_date: '2024-01-01'
+          total_trips: 3
+          avg_trip_duration_minutes: 15.0
+          peak_hour_trips: 2
   - name: test_day_of_week_extraction
     description: Verify day_of_week is correctly extracted from started_at
     model: fct_trips

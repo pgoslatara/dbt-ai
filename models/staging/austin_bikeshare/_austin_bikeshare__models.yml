@@ -41,7 +41,10 @@ models:
         tests:
           - not_null
   - name: stg_austin_bikeshare__trips
-    description: Cleaned and standardized Austin B-cycle bikeshare trips
+    description: >
+      Cleaned and standardized Austin B-cycle bikeshare trips. The source
+      contains duplicate trip_id values; this model deduplicates by trip_id,
+      retaining the earliest record per trip.
     columns:
       - name: trip_id
         description: Unique identifier for the trip

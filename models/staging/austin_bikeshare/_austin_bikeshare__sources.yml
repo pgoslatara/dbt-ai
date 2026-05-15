@@ -14,7 +14,10 @@ sources:
           - name: station_id
             description: Unique identifier for the station
       - name: bikeshare_trips
-        description: Individual trip records for Austin B-cycle bikeshare
+        description: >
+          Individual trip records for Austin B-cycle bikeshare. Note: the source
+          contains duplicate trip_id values (189,172 observed as of 2024-06-30);
+          deduplication is applied at the staging layer.
         columns:
           - name: trip_id
-            description: Unique identifier for the trip
+            description: Trip identifier (not unique in source; deduplicated in staging)

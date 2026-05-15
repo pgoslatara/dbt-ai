@@ -22,7 +22,13 @@ with
             and end_station_id is not null
             and cast(start_station_id as string) in (select station_id from {{ ref("stg_austin_bikeshare__stations") }})
             and cast(end_station_id as string) in (select station_id from {{ ref("stg_austin_bikeshare__stations") }})
+    ),
+
+    deduped as (
+        select *
+        from renamed
+        qualify row_number() over (partition by trip_id order by started_at) = 1
     )
 
 select *
-from renamed
+from deduped
